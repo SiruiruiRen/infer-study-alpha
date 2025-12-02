@@ -44,8 +44,8 @@ const VIDEOS = [
 
 // Tutorial Video Configuration (shown before Video 2 for Treatment Group 1)
 const TUTORIAL_VIDEO = {
-    link: 'TUTORIAL_VIDEO_LINK', // UPDATE THIS
-    password: 'TUTORIAL_PASSWORD' // UPDATE THIS IF NEEDED
+    link: 'AI-Tutorial-Nov25.mp4', // Local file in root
+    password: '' // No password for local file
 };
 
 // Qualtrics Survey Links
