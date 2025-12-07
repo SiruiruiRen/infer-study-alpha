@@ -417,7 +417,7 @@
         <div class="main-container">
             <div class="row">
                 <!-- Settings Panel -->
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="card">
                         <div class="card-header" data-lang-key="settings">Settings</div>
                         <div class="card-body">
@@ -447,7 +447,7 @@
                     </div>
                 </div>
                 <!-- Input Panel -->
-                <div class="col-md-9">
+                <div class="col-md-6">
                     <div class="card h-100">
                         <div class="card-header" data-lang-key="reflection_input">Student Teacher Reflection</div>
                         <div class="card-body d-flex flex-column position-relative">
@@ -459,14 +459,19 @@
                                 </div>
                             </div>
                             <button id="video-1-generate-btn" class="btn btn-primary d-none" data-lang-key="generate_feedback">Generate Feedback</button>
-                            <button id="video-1-submit-btn" class="btn btn-success btn-lg w-100" data-lang-key="submit_reflection_only">
-                                <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_reflection_only">Submit Reflection</span>
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button id="video-1-save-btn" class="btn btn-secondary btn-lg w-50" data-lang-key="save_reflection">
+                                    <i class="bi bi-save me-2"></i><span data-lang-key="save_reflection">Save Reflection</span>
+                                </button>
+                                <button id="video-1-submit-btn" class="btn btn-success btn-lg w-50" data-lang-key="submit_final">
+                                    <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <!-- Feedback Panel -->
-                <div class="col-md-6 d-none" id="video-1-feedback-section">
+                <div class="col-md-4 d-none" id="video-1-feedback-section">
                     <div class="card h-100">
                         <div class="card-header">
                             <span data-lang-key="generated_feedback">Generated Feedback</span>
@@ -646,6 +651,9 @@
                                     <label class="form-check-label" for="video-2-lang-de">Deutsch</label>
                                 </div>
                             </div>
+                            <button id="video-2-tutorial-btn" class="btn btn-info btn-sm w-100 mb-2" data-lang-key="watch_tutorial">
+                                <i class="bi bi-play-circle me-1"></i><span data-lang-key="watch_tutorial">Watch Tutorial</span>
+                            </button>
                             <button class="btn btn-outline-secondary btn-sm w-100 back-to-dashboard-btn" data-lang-key="back_to_dashboard">
                                 <i class="bi bi-arrow-left me-1"></i><span data-lang-key="back_to_dashboard">Back to Dashboard</span>
                             </button>
@@ -653,7 +661,7 @@
                     </div>
                 </div>
                 <!-- Input Panel -->
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <div class="card h-100">
                         <div class="card-header" data-lang-key="reflection_input">Student Teacher Reflection</div>
                         <div class="card-body d-flex flex-column position-relative">
@@ -663,16 +671,18 @@
                                 <div id="video-2-word-count-container" class="text-muted">
                                     <span id="video-2-word-count">0</span> <span data-lang-key="words">words</span>
                                 </div>
-                                <button id="video-2-generate-btn" class="btn btn-primary" data-lang-key="generate_feedback">Generate Feedback</button>
-                                <button id="video-2-submit-btn" class="btn btn-success btn-lg mt-2 d-none" data-lang-key="submit_final">
-                                    <i class="bi bi-check-circle"></i> <span data-lang-key="submit_final">Submit Final Reflection</span>
-                                </button>
+                                <div class="d-flex gap-2 mt-2">
+                                    <button id="video-2-generate-btn" class="btn btn-primary btn-lg w-50" data-lang-key="generate_feedback">Generate Feedback</button>
+                                    <button id="video-2-submit-btn" class="btn btn-success btn-lg w-50" disabled data-lang-key="submit_final">
+                                        <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <!-- Feedback Panel -->
-                <div class="col-md-6" id="video-2-feedback-section">
+                <div class="col-md-5" id="video-2-feedback-section">
                     <div class="card h-100">
                         <div class="card-header">
                             <span data-lang-key="generated_feedback">Generated Feedback</span>
@@ -859,7 +869,7 @@
                     </div>
                 </div>
                 <!-- Input Panel -->
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <div class="card h-100">
                         <div class="card-header" data-lang-key="reflection_input">Student Teacher Reflection</div>
                         <div class="card-body d-flex flex-column position-relative">
@@ -869,16 +879,18 @@
                                 <div id="video-3-word-count-container" class="text-muted">
                                     <span id="video-3-word-count">0</span> <span data-lang-key="words">words</span>
                                 </div>
-                                <button id="video-3-generate-btn" class="btn btn-primary" data-lang-key="generate_feedback">Generate Feedback</button>
-                                <button id="video-3-submit-btn" class="btn btn-success btn-lg mt-2 d-none" data-lang-key="submit_final">
-                                    <i class="bi bi-check-circle"></i> <span data-lang-key="submit_final">Submit Final Reflection</span>
-                                </button>
+                                <div class="d-flex gap-2 mt-2">
+                                    <button id="video-3-generate-btn" class="btn btn-primary btn-lg w-50" data-lang-key="generate_feedback">Generate Feedback</button>
+                                    <button id="video-3-submit-btn" class="btn btn-success btn-lg w-50" disabled data-lang-key="submit_final">
+                                        <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <!-- Feedback Panel -->
-                <div class="col-md-6" id="video-3-feedback-section">
+                <div class="col-md-5" id="video-3-feedback-section">
                     <div class="card h-100">
                         <div class="card-header">
                             <span data-lang-key="generated_feedback">Generated Feedback</span>
@@ -1065,7 +1077,7 @@
                     </div>
                 </div>
                 <!-- Input Panel -->
-                <div class="col-md-10">
+                <div class="col-md-9">
                     <div class="card h-100">
                         <div class="card-header" data-lang-key="reflection_input">Student Teacher Reflection</div>
                         <div class="card-body d-flex flex-column position-relative">
@@ -1077,9 +1089,14 @@
                                 </div>
                             </div>
                             <button id="video-4-generate-btn" class="btn btn-primary d-none" data-lang-key="generate_feedback">Generate Feedback</button>
-                            <button id="video-4-submit-btn" class="btn btn-success btn-lg w-100" data-lang-key="submit_reflection_only">
-                                <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_reflection_only">Submit Reflection</span>
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button id="video-4-save-btn" class="btn btn-secondary btn-lg w-50" data-lang-key="save_reflection">
+                                    <i class="bi bi-save me-2"></i><span data-lang-key="save_reflection">Save Reflection</span>
+                                </button>
+                                <button id="video-4-submit-btn" class="btn btn-success btn-lg w-50" data-lang-key="submit_final">
+                                    <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1518,6 +1535,26 @@
 
     <!-- Modals -->
     
+    <!-- Tutorial Video Modal -->
+    <div class="modal fade" id="tutorial-video-modal" tabindex="-1" aria-labelledby="tutorial-video-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tutorial-video-modal-label" data-lang-key="tutorial_video_title">INFER Tutorial</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="ratio ratio-16x9">
+                        <video id="tutorial-video-player" controls controlsList="nodownload">
+                            <source src="AI-Tutorial-Nov25.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Feedback Style Preference Modal -->
     <div class="modal fade" id="feedback-preference-modal" tabindex="-1" aria-labelledby="feedback-preference-modal-label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
