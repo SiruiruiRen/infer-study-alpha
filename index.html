@@ -447,19 +447,19 @@
                     </div>
                 </div>
                 <!-- Input Panel -->
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <div class="card h-100">
                         <div class="card-header" data-lang-key="reflection_input">Student Teacher Reflection</div>
                         <div class="card-body d-flex flex-column position-relative">
                             <textarea id="video-1-reflection-text" class="form-control flex-grow-1 mb-3" placeholder="Write your reflection here..." spellcheck="false" style="min-height: 400px;"></textarea>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
                                 <button id="video-1-clear-btn" class="btn btn-secondary" data-lang-key="clear">Clear</button>
                                 <div id="video-1-word-count-container" class="text-muted">
                                     <span id="video-1-word-count">0</span> <span data-lang-key="words">words</span>
                                 </div>
                             </div>
                             <button id="video-1-generate-btn" class="btn btn-primary d-none" data-lang-key="generate_feedback">Generate Feedback</button>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-3">
                                 <button id="video-1-save-btn" class="btn btn-secondary btn-lg w-50" data-lang-key="save_reflection">
                                     <i class="bi bi-save me-2"></i><span data-lang-key="save_reflection">Save Reflection</span>
                                 </button>
@@ -471,7 +471,7 @@
                     </div>
                 </div>
                 <!-- Feedback Panel -->
-                <div class="col-md-4 d-none" id="video-1-feedback-section">
+                <div class="col-md-2 d-none" id="video-1-feedback-section">
                     <div class="card h-100">
                         <div class="card-header">
                             <span data-lang-key="generated_feedback">Generated Feedback</span>
@@ -667,16 +667,18 @@
                         <div class="card-body d-flex flex-column position-relative">
                             <textarea id="video-2-reflection-text" class="form-control flex-grow-1 mb-3" data-lang-key-placeholder="paste_reflection" placeholder="Paste your reflection here..." spellcheck="false"></textarea>
                             <div class="input-actions mt-auto">
-                                <button id="video-2-clear-btn" class="btn btn-secondary" data-lang-key="clear">Clear</button>
-                                <div id="video-2-word-count-container" class="text-muted">
-                                    <span id="video-2-word-count">0</span> <span data-lang-key="words">words</span>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button id="video-2-clear-btn" class="btn btn-secondary" data-lang-key="clear">Clear</button>
+                                    <div id="video-2-word-count-container" class="text-muted">
+                                        <span id="video-2-word-count">0</span> <span data-lang-key="words">words</span>
+                                    </div>
                                 </div>
-                                <div class="d-flex gap-2 mt-2">
-                                    <button id="video-2-generate-btn" class="btn btn-primary btn-lg w-50" data-lang-key="generate_feedback">Generate Feedback</button>
-                                    <button id="video-2-submit-btn" class="btn btn-success btn-lg w-50" disabled data-lang-key="submit_final">
-                                        <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
-                                    </button>
-                                </div>
+                                <button id="video-2-generate-btn" class="btn btn-primary btn-lg w-100 mb-2" data-lang-key="generate_feedback">
+                                    <i class="bi bi-stars me-2"></i><span data-lang-key="generate_feedback">Generate Feedback</span>
+                                </button>
+                                <button id="video-2-submit-btn" class="btn btn-success btn-lg w-100" disabled data-lang-key="submit_final">
+                                    <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -875,16 +877,18 @@
                         <div class="card-body d-flex flex-column position-relative">
                             <textarea id="video-3-reflection-text" class="form-control flex-grow-1 mb-3" data-lang-key-placeholder="paste_reflection" placeholder="Paste your reflection here..." spellcheck="false"></textarea>
                             <div class="input-actions mt-auto">
-                                <button id="video-3-clear-btn" class="btn btn-secondary" data-lang-key="clear">Clear</button>
-                                <div id="video-3-word-count-container" class="text-muted">
-                                    <span id="video-3-word-count">0</span> <span data-lang-key="words">words</span>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button id="video-3-clear-btn" class="btn btn-secondary" data-lang-key="clear">Clear</button>
+                                    <div id="video-3-word-count-container" class="text-muted">
+                                        <span id="video-3-word-count">0</span> <span data-lang-key="words">words</span>
+                                    </div>
                                 </div>
-                                <div class="d-flex gap-2 mt-2">
-                                    <button id="video-3-generate-btn" class="btn btn-primary btn-lg w-50" data-lang-key="generate_feedback">Generate Feedback</button>
-                                    <button id="video-3-submit-btn" class="btn btn-success btn-lg w-50" disabled data-lang-key="submit_final">
-                                        <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
-                                    </button>
-                                </div>
+                                <button id="video-3-generate-btn" class="btn btn-primary btn-lg w-100 mb-2" data-lang-key="generate_feedback">
+                                    <i class="bi bi-stars me-2"></i><span data-lang-key="generate_feedback">Generate Feedback</span>
+                                </button>
+                                <button id="video-3-submit-btn" class="btn btn-success btn-lg w-100" disabled data-lang-key="submit_final">
+                                    <i class="bi bi-check-circle me-2"></i><span data-lang-key="submit_final">Submit Final Reflection</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1047,7 +1051,7 @@
         <div class="main-container">
             <div class="row">
                 <!-- Settings Panel -->
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="card">
                         <div class="card-header" data-lang-key="settings">Settings</div>
                         <div class="card-body">
@@ -1077,19 +1081,19 @@
                     </div>
                 </div>
                 <!-- Input Panel -->
-                <div class="col-md-9">
+                <div class="col-md-10">
                     <div class="card h-100">
                         <div class="card-header" data-lang-key="reflection_input">Student Teacher Reflection</div>
                         <div class="card-body d-flex flex-column position-relative">
                             <textarea id="video-4-reflection-text" class="form-control flex-grow-1 mb-3" placeholder="Write your reflection here..." spellcheck="false" style="min-height: 400px;"></textarea>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
                                 <button id="video-4-clear-btn" class="btn btn-secondary" data-lang-key="clear">Clear</button>
                                 <div id="video-4-word-count-container" class="text-muted">
                                     <span id="video-4-word-count">0</span> <span data-lang-key="words">words</span>
                                 </div>
                             </div>
                             <button id="video-4-generate-btn" class="btn btn-primary d-none" data-lang-key="generate_feedback">Generate Feedback</button>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-3">
                                 <button id="video-4-save-btn" class="btn btn-secondary btn-lg w-50" data-lang-key="save_reflection">
                                     <i class="bi bi-save me-2"></i><span data-lang-key="save_reflection">Save Reflection</span>
                                 </button>
