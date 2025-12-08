@@ -1567,13 +1567,13 @@ function configureVideoTaskUI(videoNum, hasINFER) {
     const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
     
     if (hasINFER) {
-        // INFER mode: Show generate button, hide submit initially
+        // INFER mode: Show generate button, show submit button
         if (generateBtn) {
             generateBtn.classList.remove('d-none');
             generateBtn.textContent = t.generate_feedback || 'Generate Feedback';
         }
         if (submitBtn) {
-            submitBtn.classList.add('d-none');
+            submitBtn.classList.remove('d-none');
         }
         if (feedbackSection) feedbackSection.classList.remove('d-none');
         if (conceptsSection) conceptsSection.classList.remove('d-none');
@@ -1840,7 +1840,8 @@ function resetTaskStateForVideo(videoNum) {
     if (analysisDist) analysisDist.remove();
     
     if (reviseBtn) reviseBtn.style.display = 'none';
-    if (submitBtn) submitBtn.style.display = 'none';
+    // Submit button should remain visible
+    // if (submitBtn) submitBtn.style.display = 'none';
 }
 
 // Reset task state (legacy function - kept for compatibility)
