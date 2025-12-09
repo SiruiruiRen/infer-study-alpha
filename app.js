@@ -1567,13 +1567,14 @@ function configureVideoTaskUI(videoNum, hasINFER) {
     const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
     
     if (hasINFER) {
-        // INFER mode: Show generate button, show submit button
+        // INFER mode: Show generate button and submit button
         if (generateBtn) {
             generateBtn.classList.remove('d-none');
             generateBtn.textContent = t.generate_feedback || 'Generate Feedback';
         }
         if (submitBtn) {
             submitBtn.classList.remove('d-none');
+            submitBtn.disabled = false;
         }
         if (feedbackSection) feedbackSection.classList.remove('d-none');
         if (conceptsSection) conceptsSection.classList.remove('d-none');
@@ -1840,8 +1841,6 @@ function resetTaskStateForVideo(videoNum) {
     if (analysisDist) analysisDist.remove();
     
     if (reviseBtn) reviseBtn.style.display = 'none';
-    // Submit button should remain visible
-    // if (submitBtn) submitBtn.style.display = 'none';
 }
 
 // Reset task state (legacy function - kept for compatibility)
@@ -2695,12 +2694,25 @@ function handleFinalSubmission() {
 }
 
 function handleFinalSubmissionForVideo(videoNum) {
+    const ids = getVideoElementIds(videoNum);
+    const submitBtn = document.getElementById(ids.submitBtn);
+    const originalSubmitHtml = submitBtn ? submitBtn.innerHTML : null;
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${submitBtn.dataset.loadingLabel || 'Submitting...'}`;
+    }
+
     const videoId = `video${videoNum}`;
     const video = VIDEOS.find(v => v.id === videoId);
     
     // For reflection-only mode, skip confirmation modal and submit directly
     if (video && !video.hasINFER) {
-        submitReflectionOnly(videoNum);
+        submitReflectionOnly(videoNum).finally(() => {
+            if (submitBtn && originalSubmitHtml !== null) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalSubmitHtml;
+            }
+        });
         return;
     }
     
@@ -2712,14 +2724,26 @@ function handleFinalSubmissionForVideo(videoNum) {
         bootstrapModal.show();
     } else {
         // If modal doesn't exist, directly confirm
-        confirmFinalSubmissionForVideo(videoNum);
+        confirmFinalSubmissionForVideo(videoNum).finally(() => {
+            if (submitBtn && originalSubmitHtml !== null) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalSubmitHtml;
+            }
+        });
     }
 }
 
 // Submit reflection without INFER feedback (reflection-only mode)
 async function submitReflectionOnly(videoNum) {
-    const videoId = `video${videoNum}`;
     const ids = getVideoElementIds(videoNum);
+    const submitBtn = document.getElementById(ids.submitBtn);
+    const originalSubmitHtml = submitBtn ? submitBtn.innerHTML : null;
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${submitBtn.dataset.loadingLabel || 'Submitting...'}`;
+    }
+
+    const videoId = `video${videoNum}`;
     const reflectionText = document.getElementById(ids.reflectionText)?.value?.trim();
     
     if (!reflectionText || reflectionText.length < 10) {
@@ -2797,6 +2821,11 @@ async function submitReflectionOnly(videoNum) {
         showPage(`post-video-survey-${videoNum}`);
         loadSurvey(`post_video_${videoNum}`);
     }, 1500);
+
+    if (submitBtn && originalSubmitHtml !== null) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalSubmitHtml;
+    }
 }
 
 function confirmFinalSubmission() {
