@@ -2764,9 +2764,6 @@ async function submitReflectionOnly(videoNum) {
     const saveBtn = document.getElementById(ids.saveBtn);
     if (saveBtn) saveBtn.disabled = true;
     
-    const submitBtn = document.getElementById(ids.submitBtn);
-    if (submitBtn) submitBtn.disabled = true;
-    
     const clearBtn = document.getElementById(ids.clearBtn);
     if (clearBtn) clearBtn.disabled = true;
     
