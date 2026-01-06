@@ -44,7 +44,7 @@ const VIDEOS = [
 
 // Tutorial Video Configuration (shown before Video 2 for Treatment Group 1)
 const TUTORIAL_VIDEO = {
-    link: 'AI-Tutorial-Nov25.mp4', // Local file in root
+    link: 'German_AI-Tutorial-Nov25.mp4', // Local file in root
     password: '' // No password for local file
 };
 
@@ -1174,6 +1174,10 @@ function showTutorialPage(videoId) {
     });
 }
 
+// Track tutorial watch status
+let tutorialWatchProgress = 0;
+let tutorialWatched = false;
+
 // Create tutorial page HTML
 function createTutorialPage() {
     const t = translations[currentLanguage];
@@ -1198,27 +1202,27 @@ function createTutorialPage() {
                                 <span class="tutorial-description">${t.tutorial_video_description || 'This short tutorial will explain how to use the INFER feedback system effectively.'}</span>
                             </div>
                             
-                            <div class="text-center mb-4">
-                                <a href="${TUTORIAL_VIDEO.link}" target="_blank" class="btn btn-primary btn-lg" id="open-tutorial-btn">
-                                    <i class="bi bi-play-circle me-2"></i>
-                                    <span>${t.open_tutorial || 'Open Tutorial'}</span>
-                                </a>
+                            <div class="text-center mb-4 ratio ratio-16x9">
+                                <video id="page-tutorial-video-player" controls controlsList="nodownload" style="width: 100%; border-radius: 8px;">
+                                    <source src="${TUTORIAL_VIDEO.link}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
                             </div>
                             
-                            <div class="alert alert-success">
-                                <i class="bi bi-check-circle me-2"></i>
-                                <span class="tutorial-instructions">${t.tutorial_watch_instructions || 'After watching, click "Continue to Video Task".'}</span>
+                            <div class="alert alert-warning d-none" id="tutorial-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <span>Please watch the entire video to continue.</span>
                             </div>
                             
                             <div class="mt-4">
                                 <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="tutorial-watched-check" required>
+                                    <input class="form-check-input" type="checkbox" id="tutorial-watched-check" disabled>
                                     <label class="form-check-label" for="tutorial-watched-check">
                                         ${t.tutorial_completed_checkbox || 'I have watched the tutorial video'}
                                     </label>
                                 </div>
                                 <div class="text-center">
-                                    <button id="continue-after-tutorial" class="btn btn-success btn-lg">
+                                    <button id="continue-after-tutorial" class="btn btn-secondary btn-lg" disabled>
                                         <i class="bi bi-arrow-right me-2"></i>
                                         <span>${t.continue_after_tutorial || 'Continue to Video Task'}</span>
                                     </button>
@@ -1233,12 +1237,52 @@ function createTutorialPage() {
     
     // Add event listeners
     const continueBtn = page.querySelector('#continue-after-tutorial');
-    const openTutorialBtn = page.querySelector('#open-tutorial-btn');
     const checkbox = page.querySelector('#tutorial-watched-check');
+    const videoPlayer = page.querySelector('#page-tutorial-video-player');
+    const warning = page.querySelector('#tutorial-warning');
     
-    if (openTutorialBtn) {
-        openTutorialBtn.addEventListener('click', () => {
-            logEvent('tutorial_video_opened', {
+    if (videoPlayer) {
+        // Track progress
+        videoPlayer.addEventListener('timeupdate', () => {
+            if (videoPlayer.duration > 0) {
+                const progress = videoPlayer.currentTime / videoPlayer.duration;
+                if (progress > tutorialWatchProgress) {
+                    tutorialWatchProgress = progress;
+                }
+                
+                // Enable continue if watched at least 90%
+                if (tutorialWatchProgress > 0.9 && !tutorialWatched) {
+                    tutorialWatched = true;
+                    if (checkbox) {
+                        checkbox.disabled = false;
+                        checkbox.checked = true;
+                    }
+                    if (continueBtn) {
+                        continueBtn.disabled = false;
+                        continueBtn.classList.remove('btn-secondary');
+                        continueBtn.classList.add('btn-success');
+                    }
+                    if (warning) warning.classList.add('d-none');
+                }
+            }
+        });
+        
+        videoPlayer.addEventListener('ended', () => {
+            tutorialWatched = true;
+            if (checkbox) {
+                checkbox.disabled = false;
+                checkbox.checked = true;
+            }
+            if (continueBtn) {
+                continueBtn.disabled = false;
+                continueBtn.classList.remove('btn-secondary');
+                continueBtn.classList.add('btn-success');
+            }
+            if (warning) warning.classList.add('d-none');
+        });
+        
+        videoPlayer.addEventListener('play', () => {
+            logEvent('tutorial_video_started', {
                 participant_name: currentParticipant,
                 tutorial_url: TUTORIAL_VIDEO.link
             });
@@ -1247,6 +1291,14 @@ function createTutorialPage() {
     
     if (continueBtn) {
         continueBtn.addEventListener('click', () => {
+            if (!tutorialWatched) {
+                if (warning) {
+                    warning.classList.remove('d-none');
+                    warning.textContent = 'Please watch the video until the end before continuing.';
+                }
+                return;
+            }
+            
             if (!checkbox || !checkbox.checked) {
                 const t = translations[currentLanguage];
                 showAlert(t.survey_checkbox_required || 'Please check the box to confirm you have watched the tutorial.', 'warning');
@@ -1256,10 +1308,11 @@ function createTutorialPage() {
             // Mark tutorial as watched
             markTutorialWatched();
             
-            // Continue to the original video task
-            const targetVideoId = page.dataset.targetVideoId;
+            // Continue to the target video
+            const targetVideoId = document.getElementById('page-tutorial').dataset.targetVideoId;
             if (targetVideoId) {
-                startVideoTaskAfterTutorial(targetVideoId);
+                const videoNum = getVideoPageNumber(targetVideoId);
+                continueToReflectionTask(videoNum);
             }
         });
     }
