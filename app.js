@@ -1560,6 +1560,56 @@ function setupVideoPageElements(videoNum) {
     if (langDe) {
         langDe.addEventListener('change', () => switchLanguage('de'));
     }
+    
+    // Setup concept explanation card click handlers
+    setupConceptCardClickHandlers(videoNum);
+}
+
+// Setup click handlers for concept explanation cards
+function setupConceptCardClickHandlers(videoNum) {
+    const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
+    if (!conceptsSection) return;
+    
+    // Find all definition cards
+    const descriptionCard = conceptsSection.querySelector('.description-card');
+    const explanationCard = conceptsSection.querySelector('.explanation-card');
+    const predictionCard = conceptsSection.querySelector('.prediction-card');
+    
+    if (descriptionCard) {
+        descriptionCard.style.cursor = 'pointer';
+        descriptionCard.addEventListener('click', () => {
+            logEvent('concept_explanation_clicked', {
+                video_id: `video${videoNum}`,
+                concept_name: 'Description',
+                concept_type: 'description',
+                participant_name: currentParticipant
+            });
+        });
+    }
+    
+    if (explanationCard) {
+        explanationCard.style.cursor = 'pointer';
+        explanationCard.addEventListener('click', () => {
+            logEvent('concept_explanation_clicked', {
+                video_id: `video${videoNum}`,
+                concept_name: 'Explanation',
+                concept_type: 'explanation',
+                participant_name: currentParticipant
+            });
+        });
+    }
+    
+    if (predictionCard) {
+        predictionCard.style.cursor = 'pointer';
+        predictionCard.addEventListener('click', () => {
+            logEvent('concept_explanation_clicked', {
+                video_id: `video${videoNum}`,
+                concept_name: 'Prediction',
+                concept_type: 'prediction',
+                participant_name: currentParticipant
+            });
+        });
+    }
 }
 
 // Start video task - now goes to video link page first
