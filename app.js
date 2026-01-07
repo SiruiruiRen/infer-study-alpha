@@ -1187,42 +1187,42 @@ function createTutorialPage() {
     page.style.marginTop = '60px';
     
     page.innerHTML = `
-        <div class="main-container">
+        <div class="main-container" style="max-width: 95%;">
             <div class="row justify-content-center">
-                <div class="col-md-8">
+                <div class="col-12">
                     <div class="card">
                         <div class="card-header text-center bg-info text-white">
                             <h4 class="tutorial-title mb-0">${t.tutorial_video_title || 'Tutorial: How to Use INFER'}</h4>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body d-flex flex-column align-items-center">
                             <p class="tutorial-subtitle text-muted text-center mb-4">${t.tutorial_video_subtitle || 'Please watch this tutorial before starting Video 2'}</p>
                             
-                            <div class="alert alert-info">
+                            <div class="alert alert-info w-75">
                                 <i class="bi bi-info-circle me-2"></i>
                                 <span class="tutorial-description">${t.tutorial_video_description || 'This short tutorial will explain how to use the INFER feedback system effectively.'}</span>
                             </div>
                             
-                            <div class="text-center mb-4 ratio ratio-16x9">
-                                <video id="page-tutorial-video-player" controls controlsList="nodownload" style="width: 100%; border-radius: 8px;">
+                            <div class="text-center mb-4 w-100" style="max-width: 1400px;">
+                                <video id="page-tutorial-video-player" controls controlsList="nodownload" style="width: 100%; height: auto; max-height: 75vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                                     <source src="${TUTORIAL_VIDEO.link}" type="video/mp4">
                                     Your browser does not support the video tag.
                                 </video>
                             </div>
                             
-                            <div class="alert alert-warning d-none" id="tutorial-warning">
+                            <div class="alert alert-warning d-none w-50" id="tutorial-warning">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
                                 <span>Please watch the entire video to continue.</span>
                             </div>
                             
-                            <div class="mt-4">
-                                <div class="form-check mb-3">
+                            <div class="mt-4 text-center">
+                                <div class="form-check mb-3 d-inline-block">
                                     <input class="form-check-input" type="checkbox" id="tutorial-watched-check" disabled>
                                     <label class="form-check-label" for="tutorial-watched-check">
                                         ${t.tutorial_completed_checkbox || 'I have watched the tutorial video'}
                                     </label>
                                 </div>
                                 <div class="text-center">
-                                    <button id="continue-after-tutorial" class="btn btn-secondary btn-lg" disabled>
+                                    <button id="continue-after-tutorial" class="btn btn-secondary btn-lg px-5" disabled>
                                         <i class="bi bi-arrow-right me-2"></i>
                                         <span>${t.continue_after_tutorial || 'Continue to Video Task'}</span>
                                     </button>
