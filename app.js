@@ -821,6 +821,29 @@ async function handleLogin() {
         currentParticipant = participantCode;
         currentParticipantProgress = progress;
         
+        // Verify treatment_group matches current site (prevent group switching)
+        const existingTreatmentGroup = progress.treatment_group;
+        if (existingTreatmentGroup && existingTreatmentGroup !== STUDY_CONDITION) {
+            console.warn(`Participant ${participantCode} is assigned to ${existingTreatmentGroup} but accessing ${STUDY_CONDITION} site`);
+            showAlert(
+                `Warning: You are registered in a different study group. Please use the correct link for your assigned group.`,
+                'warning'
+            );
+            // Keep their original treatment_group - don't change it
+        } else if (!existingTreatmentGroup) {
+            // If treatment_group is missing, set it based on current site
+            console.log(`Setting missing treatment_group to ${STUDY_CONDITION} for ${participantCode}`);
+            if (supabase) {
+                supabase.from('participant_progress')
+                    .update({ treatment_group: STUDY_CONDITION })
+                    .eq('participant_name', participantCode)
+                    .then(() => {
+                        currentParticipantProgress.treatment_group = STUDY_CONDITION;
+                        console.log('Updated treatment_group for', participantCode);
+                    });
+            }
+        }
+        
         // Ensure arrays are properly initialized
         if (!currentParticipantProgress.videos_completed) currentParticipantProgress.videos_completed = [];
         if (!currentParticipantProgress.video_surveys) currentParticipantProgress.video_surveys = {};
@@ -943,21 +966,22 @@ async function createParticipantProgress(participantName, condition) {
             last_active_at: new Date().toISOString()
         };
         
-        // Only include treatment_group if column exists (handle gracefully)
-        // Try to insert with treatment_group first, fallback if it fails
+        // Always set treatment_group based on which site they're accessing
+        // This ensures participants are assigned to the correct group based on their link
         let { error } = await supabase
             .from('participant_progress')
             .upsert([{
                 ...progressData,
-                treatment_group: STUDY_CONDITION
+                treatment_group: STUDY_CONDITION  // Set based on current site (Alpha/Beta/Gamma)
             }], {
                 onConflict: 'participant_name',
                 ignoreDuplicates: false
             });
         
-        // If treatment_group column doesn't exist, try without it
+        // If treatment_group column doesn't exist, try without it (shouldn't happen after migration)
         if (error && error.message && error.message.includes('treatment_group')) {
             console.warn('treatment_group column not found, creating without it');
+            console.warn('Please run MIGRATE_SUPABASE_SCHEMA.sql to add the treatment_group column');
             const { error: error2 } = await supabase
                 .from('participant_progress')
                 .upsert([progressData], {
@@ -969,6 +993,8 @@ async function createParticipantProgress(participantName, condition) {
             }
         } else if (error) {
             console.error('Error creating progress:', error);
+        } else {
+            console.log(`Created progress for ${participantName} with treatment_group: ${STUDY_CONDITION}`);
         }
     } catch (error) {
         console.error('Error in createParticipantProgress:', error);
