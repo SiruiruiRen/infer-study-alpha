@@ -1536,6 +1536,20 @@ textarea {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Allow vertical scrolling */
+}
+
+/* Ensure video task pages are scrollable */
+.video-task-page {
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100vh;
+}
+
+/* Make sure card bodies can scroll if content is long */
+.video-task-page .card-body {
+  overflow-y: visible;
+  max-height: none;
 }
 
 .page-container.d-none {
