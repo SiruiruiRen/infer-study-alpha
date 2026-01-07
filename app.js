@@ -74,7 +74,8 @@ let currentTaskState = {
     parentReflectionId: null,
     revisionCount: 0,
     currentFeedbackType: null,
-    currentFeedbackStartTime: null
+    currentFeedbackStartTime: null,
+    lastRevisionTime: null  // Track when last revision was saved
 };
 
 // Tab switching detection
@@ -3869,22 +3870,28 @@ async function logEvent(eventType, eventData = {}) {
     }
     
     try {
+        // Store user_agent and language in event_data JSONB (schema doesn't have separate columns)
+        const enrichedEventData = {
+            ...eventData,
+            user_agent: navigator.userAgent,
+            language: currentLanguage
+        };
+        
         const { error } = await supabase
             .from('user_events')
             .insert([{
                 session_id: currentSessionId,
                 reflection_id: eventData.reflection_id || null,
+                participant_name: currentParticipant || null,
                 event_type: eventType,
-                event_data: eventData,
-                user_agent: navigator.userAgent,
-                language: currentLanguage,
+                event_data: enrichedEventData,
                 timestamp_utc: new Date().toISOString()
             }]);
 
         if (error) {
             console.error('Error logging event:', error);
         } else {
-            console.log(`📝 Event logged: ${eventType}`, eventData);
+            console.log(`📝 Event logged: ${eventType}`, enrichedEventData);
         }
     } catch (error) {
         console.error('Error in logEvent:', error);
@@ -3935,6 +3942,12 @@ async function saveFeedbackToDatabase(data) {
     try {
         const revisionNumber = currentTaskState.revisionCount || 1;
         const parentReflectionId = currentTaskState.parentReflectionId || null;
+        
+        // Calculate revision time (time since last revision)
+        let revisionTimeSeconds = null;
+        if (revisionNumber > 1 && currentTaskState.lastRevisionTime) {
+            revisionTimeSeconds = (Date.now() - currentTaskState.lastRevisionTime) / 1000;
+        }
 
         const reflectionData = {
             session_id: currentSessionId,
@@ -3951,8 +3964,10 @@ async function saveFeedbackToDatabase(data) {
             weakest_component: data.analysisResult.weakest_component,
             feedback_extended: data.extendedFeedback,
             feedback_short: data.shortFeedback,
+            feedback_raw: data.rawFeedback || null,  // Store raw LLM response
             revision_number: revisionNumber,
             parent_reflection_id: parentReflectionId,
+            revision_time_seconds: revisionTimeSeconds,
             created_at: new Date().toISOString()
         };
 
@@ -3968,12 +3983,16 @@ async function saveFeedbackToDatabase(data) {
         }
 
         currentTaskState.currentReflectionId = result.id;
+        currentTaskState.lastRevisionTime = Date.now();  // Track revision time
         
         if (revisionNumber === 1) {
             currentTaskState.parentReflectionId = result.id;
         }
         
         console.log(`✅ Reflection saved to database:`, result.id);
+        if (revisionTimeSeconds !== null) {
+            console.log(`   Revision time: ${revisionTimeSeconds.toFixed(2)} seconds`);
+        }
         
         logEvent('submit_reflection', {
             video_id: data.videoSelected,
