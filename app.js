@@ -44,7 +44,7 @@ const VIDEOS = [
 
 // Tutorial Video Configuration (shown before Video 2 for Treatment Group 1)
 const TUTORIAL_VIDEO = {
-    link: 'German_AI-Tutorial-Nov25.mp4', // Local file in root
+    link: 'tutorial_german.mp4', // Local file in root
     password: '' // No password for local file
 };
 
@@ -1184,48 +1184,51 @@ function createTutorialPage() {
     const page = document.createElement('div');
     page.id = 'page-tutorial';
     page.className = 'page-container d-none';
-    page.style.marginTop = '60px';
+    // Remove margin-top to use full height
+    page.style.marginTop = '0';
+    page.style.paddingTop = '10px';
+    page.style.height = '100vh';
+    page.style.overflow = 'hidden';
     
     page.innerHTML = `
-        <div class="main-container" style="max-width: 95%;">
-            <div class="row justify-content-center">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header text-center bg-info text-white">
-                            <h4 class="tutorial-title mb-0">${t.tutorial_video_title || 'Tutorial: How to Use INFER'}</h4>
+        <div class="main-container h-100" style="max-width: 100%; padding: 0 20px;">
+            <div class="row justify-content-center h-100">
+                <div class="col-12 h-100">
+                    <div class="card h-100 border-0 shadow-none" style="background: transparent;">
+                        <div class="card-header text-center bg-transparent border-0 py-1">
+                            <h5 class="tutorial-title mb-0 text-primary fw-bold" style="font-size: 1.1rem;">${t.tutorial_video_title || 'INFER Tutorial'}</h5>
                         </div>
-                        <div class="card-body d-flex flex-column align-items-center">
-                            <p class="tutorial-subtitle text-muted text-center mb-4">${t.tutorial_video_subtitle || 'Please watch this tutorial before starting Video 2'}</p>
-                            
-                            <div class="alert alert-info w-75">
+                        <div class="card-body d-flex flex-column align-items-center p-0 h-100">
+                            <!-- Minimal info section -->
+                            <div class="alert alert-info py-1 px-3 mb-2" style="font-size: 0.85rem; max-width: 800px;">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <span class="tutorial-description">${t.tutorial_video_description || 'This short tutorial will explain how to use the INFER feedback system effectively.'}</span>
+                                <span class="tutorial-description">${t.tutorial_video_description || 'Please watch the entire video below to learn how to use the system.'}</span>
                             </div>
                             
-                            <div class="text-center mb-4 w-100" style="max-width: 1400px;">
-                                <video id="page-tutorial-video-player" controls controlsList="nodownload" style="width: 100%; height: auto; max-height: 75vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <!-- Massive video player taking remaining height -->
+                            <div class="video-container flex-grow-1 w-100 d-flex justify-content-center align-items-center" style="background: #000; border-radius: 8px; overflow: hidden; max-height: 80vh;">
+                                <video id="page-tutorial-video-player" controls controlsList="nodownload" style="width: 100%; height: 100%; max-height: 100%; object-fit: contain;">
                                     <source src="${TUTORIAL_VIDEO.link}" type="video/mp4">
                                     Your browser does not support the video tag.
                                 </video>
                             </div>
                             
-                            <div class="alert alert-warning d-none w-50" id="tutorial-warning">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                <span>Please watch the entire video to continue.</span>
-                            </div>
-                            
-                            <div class="mt-4 text-center">
-                                <div class="form-check mb-3 d-inline-block">
+                            <!-- Bottom controls -->
+                            <div class="mt-2 text-center pb-3" style="min-height: 60px;">
+                                <div class="form-check mb-2 d-inline-block">
                                     <input class="form-check-input" type="checkbox" id="tutorial-watched-check" disabled>
-                                    <label class="form-check-label" for="tutorial-watched-check">
+                                    <label class="form-check-label small text-muted" for="tutorial-watched-check">
                                         ${t.tutorial_completed_checkbox || 'I have watched the tutorial video'}
                                     </label>
                                 </div>
-                                <div class="text-center">
-                                    <button id="continue-after-tutorial" class="btn btn-secondary btn-lg px-5" disabled>
-                                        <i class="bi bi-arrow-right me-2"></i>
-                                        <span>${t.continue_after_tutorial || 'Continue to Video Task'}</span>
+                                <div class="ms-3 d-inline-block">
+                                    <button id="continue-after-tutorial" class="btn btn-secondary btn-sm px-4 fw-bold" disabled>
+                                        <span>${t.continue_after_tutorial || 'Continue'}</span>
+                                        <i class="bi bi-arrow-right ms-1"></i>
                                     </button>
+                                </div>
+                                <div class="alert alert-warning d-none py-1 px-2 mt-1 d-inline-block ms-2" id="tutorial-warning" style="font-size: 0.8rem;">
+                                    <span>Watch until end to continue</span>
                                 </div>
                             </div>
                         </div>
