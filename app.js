@@ -3167,6 +3167,29 @@ function switchLanguage(lang) {
         }
     }
     
+    // Update tutorial page if it's visible
+    const tutorialPage = document.getElementById('page-tutorial');
+    if (tutorialPage && !tutorialPage.classList.contains('d-none')) {
+        const t = translations[currentLanguage];
+        const titleEl = tutorialPage.querySelector('.tutorial-title');
+        const subtitleEl = tutorialPage.querySelector('.tutorial-subtitle');
+        const descEl = tutorialPage.querySelector('.tutorial-description');
+        const instructionsEl = tutorialPage.querySelector('.tutorial-instructions');
+        const checkboxLabel = tutorialPage.querySelector('label[for="tutorial-watched-check"]');
+        const continueBtn = tutorialPage.querySelector('#continue-after-tutorial span');
+        const warningText = tutorialPage.querySelector('.tutorial-warning-text');
+        const openBtn = tutorialPage.querySelector('#open-tutorial-btn span');
+        
+        if (titleEl) titleEl.textContent = t.tutorial_video_title || 'INFER Tutorial';
+        if (subtitleEl) subtitleEl.textContent = t.tutorial_video_subtitle || 'Please watch this tutorial before starting Video 2';
+        if (descEl) descEl.textContent = t.tutorial_video_description || 'This short video shows how to use the tool. Please watch the entire video to learn how to use the INFER feedback system effectively.';
+        if (instructionsEl) instructionsEl.textContent = t.tutorial_watch_instructions || 'Click "Open Tutorial" to watch. After watching, click "Continue to Video Task".';
+        if (checkboxLabel) checkboxLabel.textContent = t.tutorial_completed_checkbox || 'I have watched the tutorial video';
+        if (continueBtn) continueBtn.textContent = t.continue_after_tutorial || 'Continue';
+        if (warningText) warningText.textContent = t.tutorial_watch_until_end || 'Watch until end to continue';
+        if (openBtn) openBtn.textContent = t.open_tutorial || 'Open Tutorial';
+    }
+    
     // Log language change with participant info
     logEvent('language_change', {
         new_language: lang,
