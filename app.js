@@ -1244,17 +1244,19 @@ function showTutorialPage(videoId) {
         document.body.appendChild(tutorialPage);
     }
     
-    // Update tutorial page content
+    // Update tutorial page content (all elements that exist in the page)
     const titleEl = tutorialPage.querySelector('.tutorial-title');
-    const subtitleEl = tutorialPage.querySelector('.tutorial-subtitle');
     const descEl = tutorialPage.querySelector('.tutorial-description');
-    const instructionsEl = tutorialPage.querySelector('.tutorial-instructions');
+    const checkboxLabel = tutorialPage.querySelector('label[for="tutorial-watched-check"]');
+    const continueBtn = tutorialPage.querySelector('#continue-after-tutorial span');
+    const warningText = tutorialPage.querySelector('.tutorial-warning-text');
     const openBtn = tutorialPage.querySelector('#open-tutorial-btn');
     
-    if (titleEl) titleEl.textContent = t.tutorial_video_title || 'Tutorial: How to Use INFER';
-    if (subtitleEl) subtitleEl.textContent = t.tutorial_video_subtitle || 'Please watch this tutorial before starting Video 2';
-    if (descEl) descEl.textContent = t.tutorial_video_description || 'This short tutorial will explain how to use the INFER feedback system effectively.';
-    if (instructionsEl) instructionsEl.textContent = t.tutorial_watch_instructions || 'Click "Open Tutorial" to watch. After watching, click "Continue to Video Task".';
+    if (titleEl) titleEl.textContent = t.tutorial_video_title || 'INFER Tutorial';
+    if (descEl) descEl.textContent = t.tutorial_video_description || 'This short video shows how to use the tool. Please watch the entire video to learn how to use the INFER feedback system effectively.';
+    if (checkboxLabel) checkboxLabel.textContent = t.tutorial_completed_checkbox || 'I have watched the tutorial video';
+    if (continueBtn) continueBtn.textContent = t.continue_after_tutorial || 'Continue';
+    if (warningText) warningText.textContent = t.tutorial_watch_until_end || 'Watch until end to continue';
     
     if (openBtn) {
         openBtn.href = TUTORIAL_VIDEO.link;
@@ -1415,11 +1417,11 @@ function createTutorialPage() {
             // Mark tutorial as watched
             markTutorialWatched();
             
-            // Continue to the target video
+            // Continue to the video link page (video task page) after tutorial
             const targetVideoId = document.getElementById('page-tutorial').dataset.targetVideoId;
             if (targetVideoId) {
-                const videoNum = getVideoPageNumber(targetVideoId);
-                continueToReflectionTask(videoNum);
+                // Go to video link page first (this is the "video task page")
+                startVideoTaskAfterTutorial(targetVideoId);
             }
         });
     }
