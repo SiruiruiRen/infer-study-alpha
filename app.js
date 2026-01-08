@@ -204,6 +204,13 @@ const translations = {
         ai_usage_no: "No, I did not use AI",
         watch_tutorial: "Watch Tutorial",
         tutorial_video_title: "INFER Tutorial",
+        tutorial_video_subtitle: "Please watch this tutorial before starting Video 2",
+        tutorial_video_description: "This short video shows how to use the tool. Please watch the entire video to learn how to use the INFER feedback system effectively.",
+        tutorial_watch_instructions: "Click \"Open Tutorial\" to watch. After watching, click \"Continue to Video Task\".",
+        tutorial_completed_checkbox: "I have watched the tutorial video",
+        continue_after_tutorial: "Continue",
+        open_tutorial: "Open Tutorial",
+        tutorial_watch_until_end: "Watch until end to continue",
         welcome_to_infer: "Welcome to INFER",
         welcome_message: "Thank you for participating in this study on AI-supported teaching reflection. Over the next 2.5 weeks, you will analyze 4 teaching videos using our INFER system.",
         browser_recommendation: "For the best experience, we recommend using <strong>Google Chrome</strong>.",
@@ -356,6 +363,13 @@ const translations = {
         ai_usage_no: "Nein, ich habe keine KI verwendet",
         watch_tutorial: "Tutorial ansehen",
         tutorial_video_title: "INFER Tutorial",
+        tutorial_video_subtitle: "Bitte sehen Sie sich dieses Tutorial an, bevor Sie mit Video 2 beginnen",
+        tutorial_video_description: "Dieses kurze Video zeigt, wie Sie das Tool verwenden. Bitte sehen Sie sich das gesamte Video an, um zu erfahren, wie Sie das INFER-Feedback-System effektiv nutzen können.",
+        tutorial_watch_instructions: "Klicken Sie auf \"Tutorial öffnen\", um es anzusehen. Nach dem Ansehen klicken Sie auf \"Weiter zur Video-Aufgabe\".",
+        tutorial_completed_checkbox: "Ich habe das Tutorial-Video angesehen",
+        continue_after_tutorial: "Weiter",
+        open_tutorial: "Tutorial öffnen",
+        tutorial_watch_until_end: "Bis zum Ende ansehen, um fortzufahren",
         loading_messages: [
             "Bitte warten Sie, während die kleinen Elfen Ihr Feedback erstellen...",
             "Fast geschafft, wir versprechen es...",
@@ -1314,7 +1328,7 @@ function createTutorialPage() {
                                     </button>
                                 </div>
                                 <div class="alert alert-warning d-none py-1 px-2 mt-1 d-inline-block ms-2" id="tutorial-warning" style="font-size: 0.8rem;">
-                                    <span>Watch until end to continue</span>
+                                    <span class="tutorial-warning-text">${t.tutorial_watch_until_end || 'Watch until end to continue'}</span>
                                 </div>
                             </div>
                         </div>
@@ -1383,7 +1397,11 @@ function createTutorialPage() {
             if (!tutorialWatched) {
                 if (warning) {
                     warning.classList.remove('d-none');
-                    warning.textContent = 'Please watch the video until the end before continuing.';
+                    const t = translations[currentLanguage];
+                    const warningText = warning.querySelector('.tutorial-warning-text');
+                    if (warningText) {
+                        warningText.textContent = t.tutorial_watch_until_end || 'Watch until end to continue';
+                    }
                 }
                 return;
             }
