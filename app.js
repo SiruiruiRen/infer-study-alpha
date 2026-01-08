@@ -118,10 +118,13 @@ const translations = {
         check_and_continue: "Check",
         open_video_link: "Open Video",
         finished_watching: "I Finished Watching the Video",
-        video_watch_instructions: "Please click \"Open Video\" above to watch the video in a new tab. After you finish watching, return here and click the button below. You will then write about what you have observed about teaching and learning and receive feedback.",
+        video_watch_instructions: "Please click \"Open Video\" above to watch the video in a new tab. After you finish watching, return here and click the button below. In the next screen, you will submit your reflection on this video. As you watch the video, we recommend that you take notes and draft your reflection in a word processor (e.g., Word), so you can paste it into the text box.",
         survey_completed_checkbox: "I have completed this survey",
         survey_required_instruction: "You must complete the survey above before checking this box.",
         survey_checkbox_required: "Please check the box to confirm you have completed the survey.",
+        enter_participant_code: "Please enter your participant code.",
+        video_link_not_available: "Video link not available yet.",
+        enter_reflection_first: "Please enter a reflection text first.",
         video_task_title: "INFER Video Reflection Task",
         video_task_subtitle: "Analyze your teaching reflection and receive feedback",
         settings: "Settings",
@@ -144,7 +147,7 @@ const translations = {
         save_reflection: "Save Reflection",
         submit_final: "Submit Final Reflection",
         submit_reflection_only: "Submit Reflection",
-        reflection_only_mode: "Write your reflection about the video. After submission, you will proceed to a short questionnaire.",
+        reflection_only_mode: "Write your reflection about the video. After submission, you will proceed to a short questionnaire. Note: The post-video questionnaire is a key part of this task.",
         learn_key_concepts: "Learn the Key Concepts for Better Reflection",
         concepts_help: "Understanding these three dimensions will help you write more comprehensive teaching reflections",
         description: "Description",
@@ -156,12 +159,12 @@ const translations = {
         post_video_survey_title: "Post-Video Survey",
         post_video_survey_subtitle: "Please share your thoughts about this video",
         post_video_questionnaire: "Post-Video Questionnaire",
-        post_video_questionnaire_description: "Please complete the questionnaire below. This takes about 3-5 minutes.",
+        post_video_questionnaire_description: "Please complete the questionnaire below. This takes about 3-5 minutes. This questionnaire is a key part of the task and must be completed.",
         post_video_instructions: "Complete the questionnaire above, then click \"Return to Dashboard\" below.",
         return_to_dashboard: "Return to Dashboard",
         final_post_survey_title: "Final Post-Survey",
         final_post_survey_subtitle: "Thank you for completing all videos!",
-        final_post_survey_description: "Please complete the final survey below. This takes about 10-15 minutes.",
+        final_post_survey_description: "Please complete the final survey below. This takes about 10-15 minutes. This final survey is a key part of the study and must be completed.",
         final_step: "Final Step:",
         final_survey_instructions: "Complete the survey above, then click \"Complete Study\" below to finish.",
         complete_study: "Complete Study",
@@ -251,10 +254,13 @@ const translations = {
         check_and_continue: "Prüfen",
         open_video_link: "Video öffnen",
         finished_watching: "Ich habe das Video angeschaut",
-        video_watch_instructions: "Bitte klicken Sie oben auf \"Video öffnen\", um das Video in einem neuen Tab anzusehen. Nachdem Sie das Video angeschaut haben, kehren Sie hierher zurück und klicken Sie auf die Schaltfläche unten. Anschließend schreiben Sie über das, was Sie über Lehren und Lernen beobachtet haben, und erhalten Feedback.",
+        video_watch_instructions: "Bitte klicken Sie oben auf \"Video öffnen\", um das Video in einem neuen Tab anzusehen. Nachdem Sie das Video angeschaut haben, kehren Sie hierher zurück und klicken Sie auf die Schaltfläche unten. Im nächsten Bildschirm werden Sie Ihre Reflexion zu diesem Video einreichen. Während Sie das Video ansehen, empfehlen wir Ihnen, Notizen zu machen und Ihre Reflexion in einem Textverarbeitungsprogramm (z.B. Word) zu verfassen, damit Sie sie in das Textfeld einfügen können.",
         survey_completed_checkbox: "Ich habe diese Umfrage abgeschlossen",
         survey_required_instruction: "Sie müssen die Umfrage oben abschließen, bevor Sie dieses Kästchen ankreuzen.",
         survey_checkbox_required: "Bitte bestätigen Sie durch Ankreuzen, dass Sie die Umfrage abgeschlossen haben.",
+        enter_participant_code: "Bitte geben Sie Ihren Teilnehmer-Code ein.",
+        video_link_not_available: "Video-Link ist noch nicht verfügbar.",
+        enter_reflection_first: "Bitte geben Sie zuerst einen Reflexionstext ein.",
         video_task_title: "INFER Video-Reflexionsaufgabe",
         video_task_subtitle: "Analysieren Sie Ihre Unterrichtsreflexion und erhalten Sie Feedback",
         settings: "Einstellungen",
@@ -277,7 +283,7 @@ const translations = {
         save_reflection: "Reflexion speichern",
         submit_final: "Endgültige Reflexion einreichen",
         submit_reflection_only: "Reflexion einreichen",
-        reflection_only_mode: "Schreiben Sie Ihre Reflexion über das Video. Nach der Einreichung werden Sie zu einem kurzen Fragebogen weitergeleitet.",
+        reflection_only_mode: "Schreiben Sie Ihre Reflexion über das Video. Nach der Einreichung werden Sie zu einem kurzen Fragebogen weitergeleitet. Hinweis: Der Nach-Video-Fragebogen ist ein wichtiger Teil dieser Aufgabe.",
         learn_key_concepts: "Lernen Sie die Schlüsselkonzepte für bessere Reflexion",
         concepts_help: "Das Verständnis dieser drei Dimensionen hilft Ihnen, umfassendere Unterrichtsreflexionen zu schreiben",
         description: "Beschreibung",
@@ -289,12 +295,12 @@ const translations = {
         post_video_survey_title: "Nach-Video-Umfrage",
         post_video_survey_subtitle: "Bitte teilen Sie Ihre Gedanken zu diesem Video mit",
         post_video_questionnaire: "Nach-Video-Fragebogen",
-        post_video_questionnaire_description: "Bitte vervollständigen Sie den Fragebogen unten. Dies dauert etwa 3-5 Minuten.",
+        post_video_questionnaire_description: "Bitte vervollständigen Sie den Fragebogen unten. Dies dauert etwa 3-5 Minuten. Dieser Fragebogen ist ein wichtiger Teil der Aufgabe und muss ausgefüllt werden.",
         post_video_instructions: "Vervollständigen Sie den Fragebogen oben und klicken Sie dann unten auf \"Zurück zum Dashboard\".",
         return_to_dashboard: "Zurück zum Dashboard",
         final_post_survey_title: "Abschließende Nach-Umfrage",
         final_post_survey_subtitle: "Vielen Dank, dass Sie alle Videos abgeschlossen haben!",
-        final_post_survey_description: "Bitte vervollständigen Sie die abschließende Umfrage unten. Dies dauert etwa 10-15 Minuten.",
+        final_post_survey_description: "Bitte vervollständigen Sie die abschließende Umfrage unten. Dies dauert etwa 10-15 Minuten. Diese abschließende Umfrage ist ein wichtiger Teil der Studie und muss ausgefüllt werden.",
         final_step: "Letzter Schritt:",
         final_survey_instructions: "Vervollständigen Sie die Umfrage oben und klicken Sie dann unten auf \"Studie abschließen\", um fertig zu werden.",
         complete_study: "Studie abschließen",
@@ -810,7 +816,8 @@ async function handleLogin() {
     const participantCode = codeInput?.value.trim().toUpperCase();
     
     if (!participantCode) {
-        showAlert('Please enter your participant code.', 'warning');
+        const t = translations[currentLanguage];
+        showAlert(t.enter_participant_code || 'Please enter your participant code.', 'warning');
         return;
     }
     
@@ -2240,7 +2247,8 @@ async function handleGenerateFeedbackForVideo(videoNum) {
     const reflection = document.getElementById(ids.reflectionText)?.value.trim();
     
     if (!reflection) {
-        showAlert('Please enter a reflection text first.', 'warning');
+        const t = translations[currentLanguage];
+        showAlert(t.enter_reflection_first || 'Please enter a reflection text first.', 'warning');
         return;
     }
     
