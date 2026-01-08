@@ -132,7 +132,9 @@ const translations = {
         language: "Language:",
         back_to_dashboard: "Back to Dashboard",
         reflection_input: "Student Teacher Reflection",
-        paste_reflection: "Paste your reflection here...",
+        paste_reflection: "Paste or write your reflection here...",
+        write_reflection_placeholder: "Paste or write your reflection here...",
+        paste_reflection_placeholder: "Paste or write your reflection here...",
         clear: "Clear",
         words: "words",
         generate_feedback: "Generate Feedback",
@@ -268,7 +270,9 @@ const translations = {
         language: "Sprache:",
         back_to_dashboard: "Zurück zum Dashboard",
         reflection_input: "Reflexionstext",
-        paste_reflection: "Fügen Sie hier Ihre Reflexion ein...",
+        paste_reflection: "Fügen Sie hier Ihre Reflexion ein oder schreiben Sie sie hier...",
+        write_reflection_placeholder: "Fügen Sie hier Ihre Reflexion ein oder schreiben Sie sie hier...",
+        paste_reflection_placeholder: "Fügen Sie hier Ihre Reflexion ein oder schreiben Sie sie hier...",
         clear: "Löschen",
         words: "Wörter",
         generate_feedback: "Feedback generieren",
@@ -3205,12 +3209,20 @@ function applyTranslations() {
     const t = translations[currentLanguage];
     if (!t) return;
     
+    // Update all elements with data-lang-key-placeholder attribute (for placeholders)
+    document.querySelectorAll('[data-lang-key-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-lang-key-placeholder');
+        if (t[key]) {
+            element.placeholder = t[key];
+        }
+    });
+    
     // Update all elements with data-lang-key attribute
     document.querySelectorAll('[data-lang-key]').forEach(element => {
         const key = element.getAttribute('data-lang-key');
         if (t[key]) {
-            // Check if it's a placeholder (either data-lang-key-placeholder or has placeholder attribute)
-            if (element.hasAttribute('data-lang-key-placeholder') || element.hasAttribute('placeholder')) {
+            // Check if it's a placeholder (has placeholder attribute but not data-lang-key-placeholder)
+            if (element.hasAttribute('placeholder') && !element.hasAttribute('data-lang-key-placeholder')) {
                 element.placeholder = t[key];
             } 
             // For buttons with spans inside, update the span
