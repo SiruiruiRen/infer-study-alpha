@@ -2868,8 +2868,7 @@ async function handleSaveReflection(videoNum) {
                     language: currentLanguage,
                     reflection_text: reflectionText,
                     revision_number: currentTaskState.revisionCount || 1,
-                    is_draft: true, // Mark as draft/save
-                    // No feedback for save
+                    // No feedback for save (draft save)
                     feedback_extended: null,
                     feedback_short: null,
                     analysis_percentages: null,
