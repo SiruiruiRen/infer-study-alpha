@@ -96,8 +96,4 @@ URL Pattern: `infer-study-alpha.onrender.com`
 
 
 
-### Deployment
-
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
+### DeploymentDeploy to Render.com as a static site.URL Pattern: `infer-study-alpha.onrender.com`
