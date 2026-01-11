@@ -399,6 +399,23 @@ document.addEventListener('DOMContentLoaded', function() {
         currentSessionId = getOrCreateSessionId();
     }
     
+    // Check if coming from assignment site (skip consent page)
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentId = urlParams.get('student_id');
+    const anonymousId = urlParams.get('anonymous_id');
+    
+    if (studentId && anonymousId) {
+        // Coming from assignment site - skip consent, go directly to login
+        // Pre-fill the login form
+        setTimeout(() => {
+            showPage('login');
+            const codeInput = document.getElementById('participant-code-input');
+            const studentIdInput = document.getElementById('student-id-input');
+            if (codeInput) codeInput.value = anonymousId;
+            if (studentIdInput) studentIdInput.value = studentId;
+        }, 500);
+    }
+    
     initializeApp();
 });
 
