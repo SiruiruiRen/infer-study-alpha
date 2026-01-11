@@ -425,7 +425,12 @@ function initializeApp() {
     renderLanguageSwitchers();
     renderLanguageSwitcherInNav();
     applyTranslations();
-    showPage('welcome');
+    
+    // Check if we should skip welcome page (coming from assignment site)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.get('student_id') || !urlParams.get('anonymous_id')) {
+        showPage('welcome');
+    }
     
     // Set default language to German
     switchLanguage('de');
