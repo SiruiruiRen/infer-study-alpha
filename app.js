@@ -538,12 +538,22 @@ function setupEventListeners() {
             endFeedbackViewing(currentTaskState.currentFeedbackType, currentLanguage);
         }
         startFeedbackViewing('extended', currentLanguage);
+        logEvent('select_feedback_style', {
+            style: 'extended',
+            video_id: currentVideoId,
+            reflection_id: currentTaskState.currentReflectionId
+        });
     });
     document.getElementById('task-short-tab')?.addEventListener('click', () => {
         if (currentTaskState.currentFeedbackType && currentTaskState.currentFeedbackStartTime) {
             endFeedbackViewing(currentTaskState.currentFeedbackType, currentLanguage);
         }
         startFeedbackViewing('short', currentLanguage);
+        logEvent('select_feedback_style', {
+            style: 'short',
+            video_id: currentVideoId,
+            reflection_id: currentTaskState.currentReflectionId
+        });
     });
     
     // Post-video survey (legacy - kept for compatibility, but individual handlers are added below)
@@ -907,10 +917,16 @@ async function handleLogin() {
         if (existingTreatmentGroup && existingTreatmentGroup !== STUDY_CONDITION) {
             console.warn(`Participant ${participantCode} is assigned to ${existingTreatmentGroup} but accessing ${STUDY_CONDITION} site`);
             showAlert(
-                `Warning: You are registered in a different study group. Please use the correct link for your assigned group.`,
-                'warning'
+                `Error: You are registered in a different study group (${existingTreatmentGroup}). Please use the correct link for your assigned group. Access blocked.`,
+                'danger'
             );
-            // Keep their original treatment_group - don't change it
+            // Block access - don't allow them to continue
+            logEvent('wrong_site_access_attempt', {
+                participant_name: participantCode,
+                assigned_group: existingTreatmentGroup,
+                attempted_site: STUDY_CONDITION
+            });
+            return; // Exit function - don't proceed
         } else if (!existingTreatmentGroup) {
             // If treatment_group is missing, set it based on current site
             console.log(`Setting missing treatment_group to ${STUDY_CONDITION} for ${participantCode}`);
