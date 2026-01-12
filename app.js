@@ -4347,3 +4347,4 @@ window.addEventListener('beforeunload', () => {
         participant_name: currentParticipant || null
     });
 });
+}
