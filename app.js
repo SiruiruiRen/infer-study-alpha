@@ -431,10 +431,14 @@ function initializeApp() {
     renderLanguageSwitcherInNav();
     applyTranslations();
     
-    // Check if we should skip welcome page (coming from assignment site)
+    // Check if coming from assignment site (with URL params) - skip welcome, show login
     const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.get('student_id') || !urlParams.get('anonymous_id')) {
-        showPage('welcome');
+    if (urlParams.get('student_id') && urlParams.get('anonymous_id')) {
+        // Coming from assignment site - login page will be shown by setTimeout in DOMContentLoaded
+        // Welcome page stays hidden
+    } else {
+        // Direct visitor - show login page (welcome page stays hidden)
+        showPage('login');
     }
     
     // Set default language to German
