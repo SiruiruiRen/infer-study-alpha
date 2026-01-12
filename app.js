@@ -1687,6 +1687,9 @@ function setupVideoPageElements(videoNum) {
     
     // Setup concept explanation card click handlers
     setupConceptCardClickHandlers(videoNum);
+    
+    // Setup concept section expand/collapse logging
+    setupConceptSectionExpandLogging(videoNum);
 }
 
 // Setup click handlers for concept explanation cards
@@ -1734,6 +1737,44 @@ function setupConceptCardClickHandlers(videoNum) {
             });
         });
     }
+}
+
+// Setup logging for concept section expand/collapse
+function setupConceptSectionExpandLogging(videoNum) {
+    const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
+    if (!conceptsSection) return;
+    
+    const definitionsContent = document.getElementById(`video-${videoNum}-definitions-content`);
+    if (!definitionsContent) return;
+    
+    let expandStartTime = null;
+    
+    // Listen for when the section is expanded (shown)
+    definitionsContent.addEventListener('shown.bs.collapse', () => {
+        expandStartTime = Date.now();
+        
+        logEvent('concept_section_expanded', {
+            video_id: `video${videoNum}`,
+            participant_name: currentParticipant,
+            timestamp: expandStartTime
+        });
+    });
+    
+    // Listen for when the section is collapsed (hidden)
+    definitionsContent.addEventListener('hidden.bs.collapse', () => {
+        if (expandStartTime) {
+            const durationSeconds = (Date.now() - expandStartTime) / 1000;
+            
+            logEvent('concept_section_collapsed', {
+                video_id: `video${videoNum}`,
+                participant_name: currentParticipant,
+                duration_seconds: durationSeconds,
+                timestamp: Date.now()
+            });
+            
+            expandStartTime = null;
+        }
+    });
 }
 
 // Start video task - now goes to video link page first
