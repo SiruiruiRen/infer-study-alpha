@@ -1302,14 +1302,20 @@ function createVideoCard(video, number, isCompleted, surveyCompleted) {
     const viewBtn = card.querySelector('.view-video-btn');
     
     if (startBtn && canAccess) {
-        startBtn.addEventListener('click', () => {
+        startBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             startVideoTask(video.id);
+            return false;
         });
     }
     
     if (viewBtn && canAccess) {
-        viewBtn.addEventListener('click', () => {
+        viewBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             startVideoTask(video.id);
+            return false;
         });
     }
     
