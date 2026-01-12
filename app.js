@@ -407,15 +407,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const anonymousId = urlParams.get('anonymous_id');
     
     if (studentId && anonymousId) {
-        // Coming from assignment site - skip consent, go directly to login
-        // Pre-fill the login form
+        // Coming from assignment site - hide welcome page immediately, go directly to login
+        const welcomePage = document.getElementById('page-welcome');
+        if (welcomePage) welcomePage.classList.add('d-none');
+        
+        // Pre-fill the login form and show login page
         setTimeout(() => {
             showPage('login');
             const codeInput = document.getElementById('participant-code-input');
             const studentIdInput = document.getElementById('student-id-input');
             if (codeInput) codeInput.value = anonymousId;
             if (studentIdInput) studentIdInput.value = studentId;
-        }, 500);
+        }, 100);
     }
     
     initializeApp();
