@@ -394,65 +394,71 @@ const translations = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing INFER 4-video experiment version...');
     
-    // Initialize Supabase
-    supabase = initSupabase();
-    if (supabase) {
-        verifySupabaseConnection(supabase);
-        currentSessionId = getOrCreateSessionId();
-    }
-    
     // Check if coming from assignment site (skip consent page)
     const urlParams = new URLSearchParams(window.location.search);
     const studentId = urlParams.get('student_id');
     const anonymousId = urlParams.get('anonymous_id');
     
-    if (studentId && anonymousId) {
-        // Coming from assignment site - hide welcome page immediately, go directly to login
-        const welcomePage = document.getElementById('page-welcome');
-        if (welcomePage) welcomePage.classList.add('d-none');
+    // Function to initialize Supabase and app
+    function doInitialization() {
+        // Initialize Supabase (wait for function to be available)
+        if (typeof initSupabase === 'function') {
+            supabase = initSupabase();
+            if (supabase) {
+                verifySupabaseConnection(supabase);
+                currentSessionId = getOrCreateSessionId();
+            }
+        } else {
+            console.warn('initSupabase function not yet available, will retry');
+        }
         
-        // Pre-fill the login form and show login page
-        setTimeout(() => {
-            showPage('login');
-            const codeInput = document.getElementById('participant-code-input');
-            const studentIdInput = document.getElementById('student-id-input');
-            if (codeInput) codeInput.value = anonymousId;
-            if (studentIdInput) studentIdInput.value = studentId;
-        }, 100);
+        initializeApp();
+        
+        // If coming from assignment site, auto-login (skip ID entry and consent)
+        if (studentId && anonymousId) {
+            // Hide welcome page immediately
+            const welcomePage = document.getElementById('page-welcome');
+            if (welcomePage) welcomePage.classList.add('d-none');
+            
+            // Pre-fill the login form, show login page, and auto-submit
+            setTimeout(() => {
+                showPage('login');
+                const codeInput = document.getElementById('participant-code-input');
+                const studentIdInput = document.getElementById('student-id-input');
+                if (codeInput) codeInput.value = anonymousId;
+                if (studentIdInput) studentIdInput.value = studentId;
+                
+                // Auto-submit login after ensuring functions are ready
+                setTimeout(() => {
+                    if (typeof handleLogin === 'function') {
+                        handleLogin();
+                    } else {
+                        // Retry if handleLogin not ready yet
+                        setTimeout(() => {
+                            if (typeof handleLogin === 'function') {
+                                handleLogin();
+                            }
+                        }, 500);
+                    }
+                }, 500);
+            }, 200);
+        }
     }
     
-    initializeApp();
+    // Wait for Supabase library to load before initializing
+    const waitForSupabase = setInterval(() => {
+        if (typeof window.supabase !== 'undefined' && typeof initSupabase === 'function') {
+            clearInterval(waitForSupabase);
+            doInitialization();
+        }
+    }, 50);
+    
+    // Fallback: initialize after 2 seconds even if Supabase isn't ready
+    setTimeout(() => {
+        clearInterval(waitForSupabase);
+        doInitialization();
+    }, 2000);
 });
-
-// Initialize app
-function initializeApp() {
-    setupEventListeners();
-    renderLanguageSwitchers();
-    renderLanguageSwitcherInNav();
-    applyTranslations();
-    
-    // Check if coming from assignment site (with URL params) - skip welcome, show login
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('student_id') && urlParams.get('anonymous_id')) {
-        // Coming from assignment site - login page will be shown by setTimeout in DOMContentLoaded
-        // Welcome page stays hidden
-    } else {
-        // Direct visitor - show login page (welcome page stays hidden)
-        showPage('login');
-    }
-    
-    // Set default language to German
-    switchLanguage('de');
-    
-    // Log session start
-    logEvent('session_start', {
-        entry_page: 'welcome',
-        language: currentLanguage,
-        user_agent: navigator.userAgent,
-        screen_width: window.screen.width,
-        screen_height: window.screen.height
-    });
-}
 
 // Setup event listeners
 function setupEventListeners() {
