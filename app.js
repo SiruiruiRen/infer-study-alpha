@@ -398,67 +398,124 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const studentId = urlParams.get('student_id');
     const anonymousId = urlParams.get('anonymous_id');
+    const comingFromAssignment = !!(studentId && anonymousId);
     
-    // Function to initialize Supabase and app
-    function doInitialization() {
-        // Initialize Supabase (wait for function to be available)
-        if (typeof initSupabase === 'function') {
-            supabase = initSupabase();
-            if (supabase) {
-                verifySupabaseConnection(supabase);
-                currentSessionId = getOrCreateSessionId();
-            }
-        } else {
-            console.warn('initSupabase function not yet available, will retry');
-        }
-        
-        initializeApp();
-        
-        // If coming from assignment site, auto-login (skip ID entry and consent)
-        if (studentId && anonymousId) {
-            // Hide welcome page immediately
-            const welcomePage = document.getElementById('page-welcome');
-            if (welcomePage) welcomePage.classList.add('d-none');
-            
-            // Pre-fill the login form, show login page, and auto-submit
-            setTimeout(() => {
-                showPage('login');
-                const codeInput = document.getElementById('participant-code-input');
-                const studentIdInput = document.getElementById('student-id-input');
-                if (codeInput) codeInput.value = anonymousId;
-                if (studentIdInput) studentIdInput.value = studentId;
-                
-                // Auto-submit login after ensuring functions are ready
-                setTimeout(() => {
-                    if (typeof handleLogin === 'function') {
-                        handleLogin();
-                    } else {
-                        // Retry if handleLogin not ready yet
-                        setTimeout(() => {
-                            if (typeof handleLogin === 'function') {
-                                handleLogin();
-                            }
-                        }, 500);
-                    }
-                }, 500);
-            }, 200);
-        }
+    if (comingFromAssignment) {
+        // Coming from assignment site - hide welcome page immediately
+        const welcomePage = document.getElementById('page-welcome');
+        if (welcomePage) welcomePage.classList.add('d-none');
     }
     
     // Wait for Supabase library to load before initializing
     const waitForSupabase = setInterval(() => {
         if (typeof window.supabase !== 'undefined' && typeof initSupabase === 'function') {
             clearInterval(waitForSupabase);
-            doInitialization();
+            // Initialize Supabase
+            supabase = initSupabase();
+            if (supabase) {
+                verifySupabaseConnection(supabase);
+                currentSessionId = getOrCreateSessionId();
+            }
+            // Wait a bit more to ensure all functions are defined
+            setTimeout(() => {
+                if (typeof initializeApp === 'function') {
+                    initializeApp(comingFromAssignment, studentId, anonymousId);
+                } else {
+                    console.error('initializeApp function not yet available, will retry');
+                    setTimeout(() => {
+                        if (typeof initializeApp === 'function') {
+                            initializeApp(comingFromAssignment, studentId, anonymousId);
+                        }
+                    }, 500);
+                }
+            }, 100);
         }
-    }, 50);
+    }, 100);
     
-    // Fallback: initialize after 2 seconds even if Supabase isn't ready
+    // Fallback: if Supabase doesn't load after 5 seconds, initialize anyway
     setTimeout(() => {
         clearInterval(waitForSupabase);
-        doInitialization();
-    }, 2000);
+        if (typeof window.supabase === 'undefined') {
+            console.warn('Supabase library not loaded, initializing without it');
+        }
+        supabase = initSupabase();
+        if (supabase) {
+            verifySupabaseConnection(supabase);
+            currentSessionId = getOrCreateSessionId();
+        }
+        // Wait a bit to ensure all functions are defined
+        setTimeout(() => {
+            if (typeof initializeApp === 'function') {
+                initializeApp(comingFromAssignment, studentId, anonymousId);
+            } else {
+                console.error('initializeApp function not available in fallback');
+            }
+        }, 200);
+    }, 5000);
 });
+
+// Initialize app
+function initializeApp(comingFromAssignment = false, studentId = null, anonymousId = null) {
+    setupEventListeners();
+    renderLanguageSwitchers();
+    renderLanguageSwitcherInNav();
+    applyTranslations();
+    
+    // Set default language to German
+    switchLanguage('de');
+    
+    // Check if coming from assignment site (with URL params) - skip welcome, show login and auto-submit
+    if (comingFromAssignment && studentId && anonymousId) {
+        // Coming from assignment site - show login page and auto-fill
+        showPage('login');
+        
+        // Wait for page to be visible, then fill and submit
+        setTimeout(() => {
+            // Pre-fill the login form
+            const codeInput = document.getElementById('participant-code-input');
+            const studentIdInput = document.getElementById('student-id-input');
+            
+            if (codeInput) {
+                codeInput.value = anonymousId;
+                // Trigger input event to update any dependent UI
+                codeInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (studentIdInput) {
+                studentIdInput.value = studentId;
+                // Trigger input event to update any dependent UI
+                studentIdInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            
+            console.log('Form filled with:', { studentId, anonymousId });
+            
+            // Auto-submit login after ensuring handleLogin is available
+            const tryAutoLogin = () => {
+                if (typeof handleLogin === 'function') {
+                    console.log('Auto-logging in...');
+                    handleLogin();
+                } else {
+                    console.warn('handleLogin not yet available, retrying in 200ms...');
+                    setTimeout(tryAutoLogin, 200);
+                }
+            };
+            
+            // Start trying after a short delay
+            setTimeout(tryAutoLogin, 300);
+        }, 100);
+    } else {
+        // Direct visitor - show login page (welcome page stays hidden)
+        showPage('login');
+    }
+    
+    // Log session start
+    logEvent('session_start', {
+        entry_page: comingFromAssignment ? 'assignment_redirect' : 'direct',
+        language: currentLanguage,
+        user_agent: navigator.userAgent,
+        screen_width: window.screen.width,
+        screen_height: window.screen.height
+    });
+}
 
 // Setup event listeners
 function setupEventListeners() {
@@ -1993,11 +2050,42 @@ async function loadPreviousReflectionAndFeedbackForVideo(videoId, videoNum) {
                 reflectionText.value = reflection.reflection_text;
                 updateWordCountForVideo(videoNum);
                 
-                // Make read-only if video is completed
+                // Make read-only and disable all edit buttons if video is completed
                 if (isVideoCompleted) {
                     reflectionText.readOnly = true;
                     reflectionText.style.backgroundColor = '#f5f5f5';
                     reflectionText.style.cursor = 'not-allowed';
+                    
+                    // Disable all edit buttons
+                    const saveBtn = document.getElementById(ids.saveBtn);
+                    const clearBtn = document.getElementById(ids.clearBtn);
+                    const generateBtn = document.getElementById(ids.generateBtn);
+                    const reviseBtn = document.getElementById(ids.reviseBtn);
+                    const submitBtn = document.getElementById(ids.submitBtn);
+                    
+                    if (saveBtn) saveBtn.disabled = true;
+                    if (clearBtn) clearBtn.disabled = true;
+                    if (generateBtn) generateBtn.disabled = true;
+                    if (reviseBtn) reviseBtn.disabled = true;
+                    if (submitBtn) submitBtn.disabled = true;
+                    
+                    // Show a message that this video is completed
+                    const t = translations[currentLanguage];
+                    const completedMessage = currentLanguage === 'en' 
+                        ? 'This video task has been completed and submitted. You can view your reflection and feedback, but cannot make further changes.'
+                        : 'Diese Videoaufgabe wurde abgeschlossen und eingereicht. Sie können Ihre Reflexion und Ihr Feedback ansehen, aber keine weiteren Änderungen vornehmen.';
+                    
+                    // Add a notice above the reflection text area
+                    const reflectionContainer = reflectionText.closest('.mb-3') || reflectionText.parentElement;
+                    if (reflectionContainer) {
+                        let noticeDiv = reflectionContainer.querySelector('.completed-notice');
+                        if (!noticeDiv) {
+                            noticeDiv = document.createElement('div');
+                            noticeDiv.className = 'alert alert-info completed-notice mb-2';
+                            noticeDiv.innerHTML = `<i class="bi bi-info-circle me-2"></i>${completedMessage}`;
+                            reflectionContainer.insertBefore(noticeDiv, reflectionText);
+                        }
+                    }
                 }
             }
             
@@ -3376,17 +3464,17 @@ function renderLanguageSwitchers() {
                 <button type="button" class="btn ${currentLanguage === 'de' ? 'btn-primary' : 'btn-outline-primary'}" id="lang-switch-de" title="${tooltipText}">Deutsch</button>
             </div>
         `;
+        
+        // Initialize Bootstrap tooltips for this container
+        const tooltipTriggerList = container.querySelectorAll('[title]');
+        tooltipTriggerList.forEach(tooltipTriggerEl => {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
     
-    // Add event listeners
+    // Add event listeners (only need to add once, not per container)
     document.getElementById('lang-switch-en')?.addEventListener('click', () => switchLanguage('en'));
     document.getElementById('lang-switch-de')?.addEventListener('click', () => switchLanguage('de'));
-    
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = container.querySelectorAll('[title]');
-    tooltipTriggerList.forEach(tooltipTriggerEl => {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
 
 function renderLanguageSwitcherInNav() {
     const navContainer = document.querySelector('.language-switcher-container-inline');
