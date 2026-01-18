@@ -390,8 +390,16 @@ const translations = {
     }
 };
 
+// Track if app is already initialized to prevent multiple calls
+let appInitialized = false;
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
+    if (appInitialized) {
+        console.warn('App already initialized, skipping...');
+        return;
+    }
+    
     console.log('Initializing INFER 4-video experiment version...');
     
     // Check if coming from assignment site (skip consent page)
@@ -407,34 +415,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Wait for Supabase library to load before initializing
-    const waitForSupabase = setInterval(() => {
+    let waitInterval = null;
+    let fallbackTimeout = null;
+    
+    waitInterval = setInterval(() => {
         if (typeof window.supabase !== 'undefined' && typeof initSupabase === 'function') {
-            clearInterval(waitForSupabase);
+            clearInterval(waitInterval);
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
+            
             // Initialize Supabase
             supabase = initSupabase();
             if (supabase) {
                 verifySupabaseConnection(supabase);
                 currentSessionId = getOrCreateSessionId();
             }
+            
             // Wait a bit more to ensure all functions are defined
             setTimeout(() => {
-                if (typeof initializeApp === 'function') {
+                if (typeof initializeApp === 'function' && !appInitialized) {
+                    appInitialized = true;
                     initializeApp(comingFromAssignment, studentId, anonymousId);
-                } else {
-                    console.error('initializeApp function not yet available, will retry');
-                    setTimeout(() => {
-                        if (typeof initializeApp === 'function') {
-                            initializeApp(comingFromAssignment, studentId, anonymousId);
-                        }
-                    }, 500);
                 }
             }, 100);
         }
     }, 100);
     
     // Fallback: if Supabase doesn't load after 5 seconds, initialize anyway
-    setTimeout(() => {
-        clearInterval(waitForSupabase);
+    fallbackTimeout = setTimeout(() => {
+        if (waitInterval) clearInterval(waitInterval);
+        if (appInitialized) return;
+        
         if (typeof window.supabase === 'undefined') {
             console.warn('Supabase library not loaded, initializing without it');
         }
@@ -445,10 +455,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // Wait a bit to ensure all functions are defined
         setTimeout(() => {
-            if (typeof initializeApp === 'function') {
+            if (typeof initializeApp === 'function' && !appInitialized) {
+                appInitialized = true;
                 initializeApp(comingFromAssignment, studentId, anonymousId);
-            } else {
-                console.error('initializeApp function not available in fallback');
             }
         }, 200);
     }, 5000);
@@ -464,44 +473,31 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
     // Set default language to German
     switchLanguage('de');
     
-    // Check if coming from assignment site (with URL params) - skip welcome, show login and auto-submit
+    // Check if coming from assignment site (with URL params) - directly login, skip login page
     if (comingFromAssignment && studentId && anonymousId) {
-        // Coming from assignment site - show login page and auto-fill
-        showPage('login');
+        // Coming from assignment site - directly login without showing login page
+        console.log('Coming from assignment site, auto-logging in...');
         
-        // Wait for page to be visible, then fill and submit
-        setTimeout(() => {
-            // Pre-fill the login form
+        // Directly call handleLogin with the provided IDs
+        const directLogin = async () => {
+            // Set the values in the form (even though hidden) for handleLogin to work
             const codeInput = document.getElementById('participant-code-input');
             const studentIdInput = document.getElementById('student-id-input');
             
-            if (codeInput) {
-                codeInput.value = anonymousId;
-                // Trigger input event to update any dependent UI
-                codeInput.dispatchEvent(new Event('input', { bubbles: true }));
+            if (codeInput) codeInput.value = anonymousId;
+            if (studentIdInput) studentIdInput.value = studentId;
+            
+            // Call handleLogin directly
+            if (typeof handleLogin === 'function') {
+                await handleLogin();
+            } else {
+                // Wait for handleLogin to be available
+                setTimeout(directLogin, 200);
             }
-            if (studentIdInput) {
-                studentIdInput.value = studentId;
-                // Trigger input event to update any dependent UI
-                studentIdInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            
-            console.log('Form filled with:', { studentId, anonymousId });
-            
-            // Auto-submit login after ensuring handleLogin is available
-            const tryAutoLogin = () => {
-                if (typeof handleLogin === 'function') {
-                    console.log('Auto-logging in...');
-                    handleLogin();
-                } else {
-                    console.warn('handleLogin not yet available, retrying in 200ms...');
-                    setTimeout(tryAutoLogin, 200);
-                }
-            };
-            
-            // Start trying after a short delay
-            setTimeout(tryAutoLogin, 300);
-        }, 100);
+        };
+        
+        // Start login process
+        setTimeout(directLogin, 300);
     } else {
         // Direct visitor - show login page (welcome page stays hidden)
         showPage('login');
@@ -858,12 +854,19 @@ function showPage(pageId) {
         }
         */
         
-        // Render dashboard if showing dashboard page
+        // Render dashboard if showing dashboard page (only if not already rendering)
         if (pageId === 'dashboard') {
-            if (currentParticipantProgress) {
-                setTimeout(() => {
-                    renderDashboard();
-                }, 100);
+            // Use a flag to prevent multiple simultaneous renders
+            if (!window.dashboardRendering) {
+                window.dashboardRendering = true;
+                if (currentParticipantProgress) {
+                    setTimeout(() => {
+                        renderDashboard();
+                        window.dashboardRendering = false;
+                    }, 100);
+                } else {
+                    window.dashboardRendering = false;
+                }
             }
             // Render language switcher in dashboard header
             setTimeout(() => {
@@ -957,20 +960,33 @@ function handleConsentContinue() {
     showPage('login');
 }
 
+// Track if login is in progress to prevent duplicate calls
+let loginInProgress = false;
+
 // Login handler
 async function handleLogin() {
+    // Prevent duplicate login calls
+    if (loginInProgress) {
+        console.log('Login already in progress, skipping...');
+        return;
+    }
+    
+    loginInProgress = true;
+    
     const codeInput = document.getElementById('participant-code-input');
     const studentIdInput = document.getElementById('student-id-input');
     const participantCode = codeInput?.value.trim().toUpperCase();
     const studentId = studentIdInput?.value.trim();
     
     if (!participantCode) {
+        loginInProgress = false;
         const t = translations[currentLanguage];
         showAlert(t.enter_participant_code || 'Please enter your participant code.', 'warning');
         return;
     }
     
     if (!studentId) {
+        loginInProgress = false;
         const t = translations[currentLanguage];
         showAlert(t.student_id_label || 'Please enter your student ID.', 'warning');
         return;
@@ -1044,10 +1060,9 @@ async function handleLogin() {
         console.log('Restored progress for', participantCode, ':', currentParticipantProgress);
         
         // Always show dashboard first - don't auto-navigate to pre-survey
-        setTimeout(() => {
-            showPage('dashboard');
-            renderDashboard();
-        }, 1500);
+        // Remove delay to make it smoother
+        showPage('dashboard');
+        // renderDashboard will be called automatically by showPage
     } else {
         // New participant
         currentParticipant = participantCode;
@@ -1079,11 +1094,13 @@ async function handleLogin() {
         }
         
         // Show dashboard first - don't auto-navigate to pre-survey
-        setTimeout(() => {
-            showPage('dashboard');
-            renderDashboard();
-        }, 1500);
+        // Remove delay to make it smoother
+        showPage('dashboard');
+        // renderDashboard will be called automatically by showPage
     }
+    
+    // Reset login flag
+    loginInProgress = false;
 }
 
 // Assign condition (random 50/50)
@@ -1186,12 +1203,20 @@ async function createParticipantProgress(participantName, condition, studentId =
 
 // Render dashboard
 function renderDashboard() {
+    // Prevent multiple simultaneous renders
+    if (window.dashboardRendering) {
+        console.log('Dashboard already rendering, skipping...');
+        return;
+    }
+    
     console.log('renderDashboard called', { currentParticipantProgress, currentParticipant });
     
     if (!currentParticipantProgress) {
         console.warn('No participant progress available');
         return;
     }
+    
+    window.dashboardRendering = true;
     
     // Update welcome message with participant name
     const welcomeText = document.getElementById('dashboard-welcome-text');
@@ -1254,6 +1279,7 @@ function renderDashboard() {
     updatePostSurveyStatus();
     
     console.log('Dashboard rendered successfully');
+    window.dashboardRendering = false;
 }
 
 // Update pre-survey status on dashboard
