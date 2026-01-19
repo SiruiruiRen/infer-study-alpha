@@ -3679,22 +3679,17 @@ function renderLanguageSwitcherInNav() {
     // Also render language switcher in dashboard header
     const dashboardHeaderSwitcher = document.querySelector('.language-switcher-container-inline-header');
     if (dashboardHeaderSwitcher) {
+        // No tooltip in dashboard header (it's only relevant for video tasks)
         dashboardHeaderSwitcher.innerHTML = `
             <div class="btn-group" role="group">
-                <button type="button" class="btn ${currentLanguage === 'en' ? 'btn-primary' : 'btn-outline-primary'}" id="header-lang-switch-en" title="${tooltipText}">English</button>
-                <button type="button" class="btn ${currentLanguage === 'de' ? 'btn-primary' : 'btn-outline-primary'}" id="header-lang-switch-de" title="${tooltipText}">Deutsch</button>
+                <button type="button" class="btn ${currentLanguage === 'en' ? 'btn-primary' : 'btn-outline-primary'}" id="header-lang-switch-en">English</button>
+                <button type="button" class="btn ${currentLanguage === 'de' ? 'btn-primary' : 'btn-outline-primary'}" id="header-lang-switch-de">Deutsch</button>
             </div>
         `;
         
         // Add event listeners
         document.getElementById('header-lang-switch-en')?.addEventListener('click', () => switchLanguage('en'));
         document.getElementById('header-lang-switch-de')?.addEventListener('click', () => switchLanguage('de'));
-        
-        // Initialize Bootstrap tooltips
-        const tooltipTriggerList = dashboardHeaderSwitcher.querySelectorAll('[title]');
-        tooltipTriggerList.forEach(tooltipTriggerEl => {
-            new bootstrap.Tooltip(tooltipTriggerEl);
-        });
     }
 }
 
