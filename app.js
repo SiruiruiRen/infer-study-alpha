@@ -4792,41 +4792,46 @@ async function saveFeedbackToDatabase(data) {
             // revision_time_seconds: removed - column doesn't exist in schema
         };
 
-        // Use upsert to update existing reflection or insert new one
-        // This ensures reflection is saved even if user generates feedback multiple times
-        const { data: result, error } = await supabase
-            .from('reflections')
-            .upsert([reflectionData], {
-                onConflict: 'id',
-                ignoreDuplicates: false
-            })
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Database insert/update error:', error);
-            // Try insert without upsert as fallback
-            const { data: result2, error: error2 } = await supabase
+        // Check if there's an existing reflection for this participant and video
+        // If currentReflectionId exists, update it; otherwise insert new
+        let result = null;
+        let error = null;
+        
+        if (currentTaskState.currentReflectionId) {
+            // Update existing reflection
+            const { data: updateResult, error: updateError } = await supabase
+                .from('reflections')
+                .update(reflectionData)
+                .eq('id', currentTaskState.currentReflectionId)
+                .select()
+                .single();
+            
+            result = updateResult;
+            error = updateError;
+            
+            if (error) {
+                console.error('Database update error:', error);
+            }
+        }
+        
+        // If no existing reflection or update failed, insert new one
+        if (!result || error) {
+            const { data: insertResult, error: insertError } = await supabase
                 .from('reflections')
                 .insert([reflectionData])
                 .select()
                 .single();
             
-            if (error2) {
-                console.error('Database insert fallback also failed:', error2);
+            if (insertError) {
+                console.error('Database insert error:', insertError);
                 return;
             }
             
-            // Use result2 if upsert failed but insert succeeded
-            if (result2) {
-                currentTaskState.currentReflectionId = result2.id;
-                currentTaskState.lastRevisionTime = Date.now();
-                if (revisionNumber === 1) {
-                    currentTaskState.parentReflectionId = result2.id;
-                }
-                console.log(`✅ Reflection saved to database (fallback insert):`, result2.id);
-                return;
-            }
+            result = insertResult;
+        }
+
+        if (!result) {
+            console.error('Failed to save reflection to database');
             return;
         }
 
