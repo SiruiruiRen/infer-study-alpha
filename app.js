@@ -2298,13 +2298,15 @@ async function loadPreviousReflectionAndFeedbackForVideo(videoId, videoNum) {
                         : 'Diese Videoaufgabe wurde abgeschlossen und eingereicht. Sie können Ihre Reflexion und Ihr Feedback ansehen, aber keine weiteren Änderungen vornehmen.';
                     
                     // Add a notice above the reflection text area
-                    const reflectionContainer = reflectionText.closest('.mb-3') || reflectionText.parentElement;
-                    if (reflectionContainer) {
+                    // Find the parent container (card-body) that contains the textarea
+                    const reflectionContainer = reflectionText.parentElement;
+                    if (reflectionContainer && reflectionContainer.contains(reflectionText)) {
                         let noticeDiv = reflectionContainer.querySelector('.completed-notice');
                         if (!noticeDiv) {
                             noticeDiv = document.createElement('div');
                             noticeDiv.className = 'alert alert-info completed-notice mb-2';
                             noticeDiv.innerHTML = `<i class="bi bi-info-circle me-2"></i>${completedMessage}`;
+                            // Insert before the textarea
                             reflectionContainer.insertBefore(noticeDiv, reflectionText);
                         }
                     }
