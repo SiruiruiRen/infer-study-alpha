@@ -528,12 +528,9 @@ async function directLoginFromAssignment(studentId, anonymousId) {
         
         console.log('Restored progress for', participantCode, ':', currentParticipantProgress);
         
-        // Go directly to dashboard
+        // Go directly to dashboard (renderDashboard will be called by showPage)
         if (typeof showPage === 'function') {
             showPage('dashboard');
-        }
-        if (typeof renderDashboard === 'function') {
-            renderDashboard();
         }
     } else {
         // New participant - create progress record
@@ -562,12 +559,9 @@ async function directLoginFromAssignment(studentId, anonymousId) {
             });
         }
         
-        // Go directly to dashboard
+        // Go directly to dashboard (renderDashboard will be called by showPage)
         if (typeof showPage === 'function') {
             showPage('dashboard');
-        }
-        if (typeof renderDashboard === 'function') {
-            renderDashboard();
         }
     }
 }
@@ -1004,19 +998,17 @@ function showPage(pageId) {
         
         // Render dashboard if showing dashboard page
         if (pageId === 'dashboard') {
-            if (currentParticipantProgress) {
-                setTimeout(() => {
-                    if (typeof renderDashboard === 'function') {
-                        renderDashboard();
-                    }
-                }, 100);
+            // Render language switcher in dashboard header immediately
+            if (typeof renderLanguageSwitcherInNav === 'function') {
+                renderLanguageSwitcherInNav();
             }
-            // Render language switcher in dashboard header
-            setTimeout(() => {
-                if (typeof renderLanguageSwitcherInNav === 'function') {
-                    renderLanguageSwitcherInNav();
+            
+            // Render dashboard immediately
+            if (currentParticipantProgress) {
+                if (typeof renderDashboard === 'function') {
+                    renderDashboard();
                 }
-            }, 50);
+            }
         }
         
         // Setup video page if it's a video page
