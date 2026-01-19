@@ -4778,29 +4778,55 @@ async function saveFeedbackToDatabase(data) {
             language: currentLanguage,
             task_id: `video-task-${data.videoSelected}`,
             reflection_text: data.reflectionText,
-            analysis_percentages: {
+            analysis_percentages: data.analysisResult ? {
                 raw: data.analysisResult.percentages_raw,
                 priority: data.analysisResult.percentages_priority,
                 displayed_to_student: data.analysisResult.percentages_raw
-            },
-            weakest_component: data.analysisResult.weakest_component,
+            } : null,
+            weakest_component: data.analysisResult?.weakest_component || null,
             feedback_extended: data.extendedFeedback,
             feedback_short: data.shortFeedback,
             // feedback_raw: data.rawFeedback || null,  // Store raw LLM response (column not in schema)
             revision_number: revisionNumber,
-            parent_reflection_id: parentReflectionId,
-            revision_time_seconds: revisionTimeSeconds,
-            created_at: new Date().toISOString()
+            parent_reflection_id: parentReflectionId
+            // revision_time_seconds: removed - column doesn't exist in schema
         };
 
+        // Use upsert to update existing reflection or insert new one
+        // This ensures reflection is saved even if user generates feedback multiple times
         const { data: result, error } = await supabase
             .from('reflections')
-            .insert([reflectionData])
+            .upsert([reflectionData], {
+                onConflict: 'id',
+                ignoreDuplicates: false
+            })
             .select()
             .single();
 
         if (error) {
-            console.error('Database insert error:', error);
+            console.error('Database insert/update error:', error);
+            // Try insert without upsert as fallback
+            const { data: result2, error: error2 } = await supabase
+                .from('reflections')
+                .insert([reflectionData])
+                .select()
+                .single();
+            
+            if (error2) {
+                console.error('Database insert fallback also failed:', error2);
+                return;
+            }
+            
+            // Use result2 if upsert failed but insert succeeded
+            if (result2) {
+                currentTaskState.currentReflectionId = result2.id;
+                currentTaskState.lastRevisionTime = Date.now();
+                if (revisionNumber === 1) {
+                    currentTaskState.parentReflectionId = result2.id;
+                }
+                console.log(`✅ Reflection saved to database (fallback insert):`, result2.id);
+                return;
+            }
             return;
         }
 
@@ -4812,9 +4838,6 @@ async function saveFeedbackToDatabase(data) {
         }
         
         console.log(`✅ Reflection saved to database:`, result.id);
-        if (revisionTimeSeconds !== null) {
-            console.log(`   Revision time: ${revisionTimeSeconds.toFixed(2)} seconds`);
-        }
         
         logEvent('submit_reflection', {
             video_id: data.videoSelected,
