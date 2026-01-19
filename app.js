@@ -2095,11 +2095,11 @@ async function startVideoTask(videoId) {
     
     console.log(`Found video:`, video);
     
-    // Tutorial check removed for Beta (Treatment Group 1 has no tutorial)
-    // if (video.hasTutorial && !currentParticipantProgress?.tutorial_watched) {
-    //     showTutorialPage(videoId);
-    //     return;
-    // }
+    // Check if tutorial should be shown (Alpha/Treatment Group 1: Video 2 has tutorial)
+    if (video.hasTutorial && !currentParticipantProgress?.tutorial_watched) {
+        showTutorialPage(videoId);
+        return;
+    }
     
     const videoNum = getVideoPageNumber(videoId);
     
@@ -4716,7 +4716,7 @@ async function saveFeedbackToDatabase(data) {
             weakest_component: data.analysisResult.weakest_component,
             feedback_extended: data.extendedFeedback,
             feedback_short: data.shortFeedback,
-            feedback_raw: data.rawFeedback || null,  // Store raw LLM response
+            // feedback_raw: data.rawFeedback || null,  // Store raw LLM response (column not in schema)
             revision_number: revisionNumber,
             parent_reflection_id: parentReflectionId,
             revision_time_seconds: revisionTimeSeconds,
