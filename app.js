@@ -208,13 +208,6 @@ const translations = {
         ai_usage_no: "No, I did not use AI",
         watch_tutorial: "Watch Tutorial",
         tutorial_video_title: "INFER Tutorial",
-        tutorial_video_subtitle: "Please watch this tutorial before starting Video 2",
-        tutorial_video_description: "This short video shows how to use the tool. Please watch the entire video to learn how to use the INFER feedback system effectively.",
-        tutorial_watch_instructions: "Click \"Open Tutorial\" to watch. After watching, click \"Continue to Video Task\".",
-        tutorial_completed_checkbox: "I have watched the tutorial video",
-        continue_after_tutorial: "Continue",
-        open_tutorial: "Open Tutorial",
-        tutorial_watch_until_end: "Watch until end to continue",
         welcome_to_infer: "Welcome to INFER",
         welcome_message: "Thank you for participating in this study on AI-supported teaching reflection. The site is open from February 1 to March 31. We recommend that you complete one video each week, so that you have enough time for spaced practice. You will analyze 4 teaching videos using our INFER system.",
         browser_recommendation: "For the best experience, we recommend using <strong>Google Chrome</strong>.",
@@ -315,12 +308,12 @@ const translations = {
         post_video_survey_title: "Nach-Video-Umfrage",
         post_video_survey_subtitle: "Bitte teilen Sie Ihre Gedanken zu diesem Video mit",
         post_video_questionnaire: "Nach-Video-Fragebogen",
-        post_video_questionnaire_description: "Bitte vervollständigen Sie den Fragebogen unten. Dies dauert etwa 3-5 Minuten. Dieser Fragebogen ist ein wichtiger Teil der Aufgabe und muss ausgefüllt werden.",
+        post_video_questionnaire_description: "Bitte vervollständigen Sie den Fragebogen unten. Dies dauert etwa 3-5 Minuten.",
         post_video_instructions: "Vervollständigen Sie den Fragebogen oben und klicken Sie dann unten auf \"Zurück zum Dashboard\".",
         return_to_dashboard: "Zurück zum Dashboard",
         final_post_survey_title: "Abschließende Nach-Umfrage",
         final_post_survey_subtitle: "Vielen Dank, dass Sie alle Videos abgeschlossen haben!",
-        final_post_survey_description: "Bitte vervollständigen Sie die abschließende Umfrage unten. Dies dauert etwa 10-15 Minuten. Diese abschließende Umfrage ist ein wichtiger Teil der Studie und muss ausgefüllt werden.",
+        final_post_survey_description: "Bitte vervollständigen Sie die abschließende Umfrage unten. Dies dauert etwa 10-15 Minuten.",
         final_step: "Letzter Schritt:",
         final_survey_instructions: "Vervollständigen Sie die Umfrage oben und klicken Sie dann unten auf \"Studie abschließen\", um fertig zu werden.",
         complete_study: "Studie abschließen",
@@ -373,13 +366,6 @@ const translations = {
         ai_usage_no: "Nein, ich habe keine KI verwendet",
         watch_tutorial: "Tutorial ansehen",
         tutorial_video_title: "INFER Tutorial",
-        tutorial_video_subtitle: "Bitte sehen Sie sich dieses Tutorial an, bevor Sie mit Video 2 beginnen",
-        tutorial_video_description: "Dieses kurze Video zeigt, wie Sie das Tool verwenden. Bitte sehen Sie sich das gesamte Video an, um zu erfahren, wie Sie das INFER-Feedback-System effektiv nutzen können.",
-        tutorial_watch_instructions: "Klicken Sie auf \"Tutorial öffnen\", um es anzusehen. Nach dem Ansehen klicken Sie auf \"Weiter zur Video-Aufgabe\".",
-        tutorial_completed_checkbox: "Ich habe das Tutorial-Video angesehen",
-        continue_after_tutorial: "Weiter",
-        open_tutorial: "Tutorial öffnen",
-        tutorial_watch_until_end: "Bis zum Ende ansehen, um fortzufahren",
         loading_messages: [
             "Bitte warten Sie, während die kleinen Elfen Ihr Feedback erstellen...",
             "Fast geschafft, wir versprechen es...",
@@ -390,8 +376,16 @@ const translations = {
     }
 };
 
+// Track if app is already initialized to prevent multiple calls
+let appInitialized = false;
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
+    if (appInitialized) {
+        console.warn('App already initialized, skipping...');
+        return;
+    }
+    
     console.log('Initializing INFER 4-video experiment version...');
     
     // Check if coming from assignment site (skip consent page)
@@ -406,10 +400,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (welcomePage) welcomePage.classList.add('d-none');
     }
     
-    // Wait for Supabase library and initSupabase function to load before initializing
-    const waitForSupabase = setInterval(() => {
+    // Wait for Supabase library to load before initializing
+    let waitInterval = null;
+    let fallbackTimeout = null;
+    
+    waitInterval = setInterval(() => {
         if (typeof window.supabase !== 'undefined' && typeof initSupabase === 'function') {
-            clearInterval(waitForSupabase);
+            clearInterval(waitInterval);
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
+            
             // Initialize Supabase
             try {
                 supabase = initSupabase();
@@ -420,13 +419,19 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error initializing Supabase:', error);
             }
-            initializeApp(comingFromAssignment, studentId, anonymousId);
+            
+            if (!appInitialized) {
+                appInitialized = true;
+                initializeApp(comingFromAssignment, studentId, anonymousId);
+            }
         }
     }, 100);
     
     // Fallback: if Supabase doesn't load after 2 seconds, initialize anyway
-    setTimeout(() => {
-        clearInterval(waitForSupabase);
+    fallbackTimeout = setTimeout(() => {
+        if (waitInterval) clearInterval(waitInterval);
+        if (appInitialized) return;
+        
         if (typeof window.supabase === 'undefined') {
             console.warn('Supabase library not loaded, initializing without it');
         }
@@ -455,11 +460,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Error initializing Supabase on retry:', error);
                     }
                 }
-                initializeApp(comingFromAssignment, studentId, anonymousId);
+                if (!appInitialized) {
+                    appInitialized = true;
+                    initializeApp(comingFromAssignment, studentId, anonymousId);
+                }
             }, 500);
             return;
         }
-        initializeApp(comingFromAssignment, studentId, anonymousId);
+        if (!appInitialized) {
+            appInitialized = true;
+            initializeApp(comingFromAssignment, studentId, anonymousId);
+        }
     }, 2000); // Reduced from 5000ms to 2000ms
 });
 
@@ -589,40 +600,17 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
         // Coming from assignment site - completely skip login/consent pages, go directly to dashboard
         console.log('Coming from assignment site, skipping login/consent, going directly to dashboard...', { studentId, anonymousId });
         
-        // IMPORTANT: Don't show login page - wait for functions and go directly to dashboard
         // Wait for all required functions to be ready, then login directly
         const attemptDirectLogin = async () => {
-            // Check if all required functions are available
-            const hasLoadProgress = typeof loadParticipantProgress === 'function';
-            const hasCreateProgress = typeof createParticipantProgress === 'function';
-            const hasDirectLogin = typeof directLoginFromAssignment === 'function';
-            const hasShowPage = typeof showPage === 'function';
-            const hasRenderDashboard = typeof renderDashboard === 'function';
-            const hasSupabase = supabase !== null && supabase !== undefined;
-            
-            if (hasLoadProgress && hasCreateProgress && hasDirectLogin && hasShowPage && hasRenderDashboard) {
-                console.log('All functions ready, attempting direct login...', {
-                    supabase: hasSupabase,
-                    studentId,
-                    anonymousId
-                });
-                try {
-                    await directLoginFromAssignment(studentId, anonymousId);
-                } catch (error) {
-                    console.error('Error in directLoginFromAssignment:', error);
-                    // Show error message if direct login fails
-                    if (typeof showAlert === 'function') {
-                        showAlert('Failed to login. Please return to the assignment site and try again.', 'danger');
-                    }
-                }
+            if (typeof loadParticipantProgress === 'function' && 
+                typeof createParticipantProgress === 'function' &&
+                typeof directLoginFromAssignment === 'function') {
+                await directLoginFromAssignment(studentId, anonymousId);
             } else {
-                console.log('Functions not ready yet, retrying...', {
-                    loadParticipantProgress: hasLoadProgress,
-                    createParticipantProgress: hasCreateProgress,
-                    directLoginFromAssignment: hasDirectLogin,
-                    showPage: hasShowPage,
-                    renderDashboard: hasRenderDashboard,
-                    supabase: hasSupabase
+                console.log('Login functions not ready yet, retrying...', {
+                    loadParticipantProgress: typeof loadParticipantProgress,
+                    createParticipantProgress: typeof createParticipantProgress,
+                    directLoginFromAssignment: typeof directLoginFromAssignment
                 });
                 setTimeout(attemptDirectLogin, 50); // Reduced retry delay
             }
@@ -634,9 +622,7 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
         // Direct visitor - NOT ALLOWED: redirect to assignment site
         console.warn('Direct access not allowed. Redirecting to assignment site...');
         const assignmentUrl = 'https://infer-study-assignment.onrender.com';
-        if (typeof showAlert === 'function') {
-            showAlert('Direct access is not allowed. Please access this site through the assignment page.', 'warning');
-        }
+        showAlert('Direct access is not allowed. Please access this site through the assignment page.', 'warning');
         setTimeout(() => {
             window.location.href = assignmentUrl;
         }, 3000);
@@ -718,19 +704,7 @@ function setupEventListeners() {
         document.getElementById(`video-${i}-lang-de`)?.addEventListener('change', () => switchLanguage('de'));
     }
     
-    // Tutorial button for video 2
-    document.getElementById('video-2-tutorial-btn')?.addEventListener('click', () => {
-        const modal = document.getElementById('tutorial-video-modal');
-        if (modal) {
-            const tutorialModal = new bootstrap.Modal(modal);
-            tutorialModal.show();
-            logEvent('tutorial_opened', {
-                video_id: 'video2',
-                participant_name: currentParticipant,
-                language: currentLanguage
-            });
-        }
-    });
+    // Tutorial button removed for Beta (no tutorial in Treatment Group 2)
     
     // Language switchers (for all pages via language-switcher-container)
     document.addEventListener('click', (e) => {
@@ -747,22 +721,12 @@ function setupEventListeners() {
             endFeedbackViewing(currentTaskState.currentFeedbackType, currentLanguage);
         }
         startFeedbackViewing('extended', currentLanguage);
-        logEvent('select_feedback_style', {
-            style: 'extended',
-            video_id: currentVideoId,
-            reflection_id: currentTaskState.currentReflectionId
-        });
     });
     document.getElementById('task-short-tab')?.addEventListener('click', () => {
         if (currentTaskState.currentFeedbackType && currentTaskState.currentFeedbackStartTime) {
             endFeedbackViewing(currentTaskState.currentFeedbackType, currentLanguage);
         }
         startFeedbackViewing('short', currentLanguage);
-        logEvent('select_feedback_style', {
-            style: 'short',
-            video_id: currentVideoId,
-            reflection_id: currentTaskState.currentReflectionId
-        });
     });
     
     // Post-video survey (legacy - kept for compatibility, but individual handlers are added below)
@@ -965,12 +929,16 @@ function showPage(pageId) {
                 mainNav.classList.add('d-none');
             } else {
                 mainNav.classList.remove('d-none');
-                // Update participant name in nav
+                // Update participant name in nav - prefer student_id over anonymous_id
                 const navParticipantName = document.getElementById('nav-participant-name');
-                if (navParticipantName && currentParticipant) {
-                    navParticipantName.textContent = currentLanguage === 'en' 
-                        ? `Participant: ${currentParticipant}`
-                        : `Teilnehmer: ${currentParticipant}`;
+                if (navParticipantName) {
+                    // Prefer student_id if available, otherwise use participant code (anonymous_id)
+                    const displayId = currentParticipantProgress?.student_id || currentParticipant || '';
+                    if (displayId) {
+                        navParticipantName.textContent = currentLanguage === 'en' 
+                            ? `Student ID: ${displayId}`
+                            : `Studenten-ID: ${displayId}`;
+                    }
                 }
                 
                 // Update dashboard button text based on current page
@@ -1012,7 +980,8 @@ function showPage(pageId) {
                 renderLanguageSwitcherInNav();
             }
             
-            // Render dashboard immediately
+            // Reset dashboard rendering flag and render
+            window.dashboardRendering = false;
             if (currentParticipantProgress) {
                 if (typeof renderDashboard === 'function') {
                     renderDashboard();
@@ -1026,6 +995,12 @@ function showPage(pageId) {
             if (typeof setupVideoPageElements === 'function') {
                 setupVideoPageElements(videoNum);
             }
+            // Ensure concept click handlers are set up after a short delay to allow DOM to be ready
+            setTimeout(() => {
+                if (typeof setupConceptCardClickHandlers === 'function') {
+                    setupConceptCardClickHandlers(videoNum);
+                }
+            }, 100);
             
             // Update video page titles/subtitles
             const videoId = `video${videoNum}`;
@@ -1116,20 +1091,33 @@ function handleConsentContinue() {
     showPage('login');
 }
 
+// Track if login is in progress to prevent duplicate calls
+let loginInProgress = false;
+
 // Login handler
 async function handleLogin() {
+    // Prevent duplicate login calls
+    if (loginInProgress) {
+        console.log('Login already in progress, skipping...');
+        return;
+    }
+    
+    loginInProgress = true;
+    
     const codeInput = document.getElementById('participant-code-input');
     const studentIdInput = document.getElementById('student-id-input');
     const participantCode = codeInput?.value.trim().toUpperCase();
     const studentId = studentIdInput?.value.trim();
     
     if (!participantCode) {
+        loginInProgress = false;
         const t = translations[currentLanguage];
         showAlert(t.enter_participant_code || 'Please enter your participant code.', 'warning');
         return;
     }
     
     if (!studentId) {
+        loginInProgress = false;
         const t = translations[currentLanguage];
         showAlert(t.student_id_label || 'Please enter your student ID.', 'warning');
         return;
@@ -1152,11 +1140,13 @@ async function handleLogin() {
                 'danger'
             );
             // Block access - don't allow them to continue
-            logEvent('wrong_site_access_attempt', {
-                participant_name: participantCode,
-                assigned_group: existingTreatmentGroup,
-                attempted_site: STUDY_CONDITION
-            });
+            if (typeof logEvent === 'function') {
+                logEvent('wrong_site_access_attempt', {
+                    participant_name: participantCode,
+                    assigned_group: existingTreatmentGroup,
+                    attempted_site: STUDY_CONDITION
+                });
+            }
             return; // Exit function - don't proceed
         } else if (!existingTreatmentGroup) {
             // If treatment_group is missing, set it based on current site
@@ -1203,10 +1193,9 @@ async function handleLogin() {
         console.log('Restored progress for', participantCode, ':', currentParticipantProgress);
         
         // Always show dashboard first - don't auto-navigate to pre-survey
-        setTimeout(() => {
-            showPage('dashboard');
-            renderDashboard();
-        }, 1500);
+        // Remove delay to make it smoother
+        showPage('dashboard');
+        // renderDashboard will be called automatically by showPage
     } else {
         // New participant
         currentParticipant = participantCode;
@@ -1224,12 +1213,14 @@ async function handleLogin() {
             video_surveys: {}
         };
         
-        logEvent('participant_registered', {
-            participant_name: participantCode,
-            treatment_group: STUDY_CONDITION,
-            study_version: STUDY_VERSION,
-            assigned_condition: condition
-        });
+        if (typeof logEvent === 'function') {
+            logEvent('participant_registered', {
+                participant_name: participantCode,
+                treatment_group: STUDY_CONDITION,
+                study_version: STUDY_VERSION,
+                assigned_condition: condition
+            });
+        }
         
         // Hide resume message for new users
         const resumeInfo = document.getElementById('resume-info');
@@ -1238,11 +1229,13 @@ async function handleLogin() {
         }
         
         // Show dashboard first - don't auto-navigate to pre-survey
-        setTimeout(() => {
-            showPage('dashboard');
-            renderDashboard();
-        }, 1500);
+        // Remove delay to make it smoother
+        showPage('dashboard');
+        // renderDashboard will be called automatically by showPage
     }
+    
+    // Reset login flag
+    loginInProgress = false;
 }
 
 // Assign condition (random 50/50)
@@ -1353,6 +1346,12 @@ async function createParticipantProgress(participantName, condition, studentId =
 
 // Render dashboard
 function renderDashboard() {
+    // Prevent multiple simultaneous renders
+    if (window.dashboardRendering) {
+        console.log('Dashboard already rendering, skipping...');
+        return;
+    }
+    
     console.log('renderDashboard called', { currentParticipantProgress, currentParticipant });
     
     if (!currentParticipantProgress) {
@@ -1360,7 +1359,9 @@ function renderDashboard() {
         return;
     }
     
-    // Update welcome message with participant name
+    window.dashboardRendering = true;
+    
+    // Update welcome message with participant name - prefer student_id
     const welcomeText = document.getElementById('dashboard-welcome-text');
     const nameEl = document.getElementById('dashboard-participant-name');
     if (welcomeText && nameEl) {
@@ -1372,15 +1373,18 @@ function renderDashboard() {
             (currentParticipantProgress.video_surveys && Object.keys(currentParticipantProgress.video_surveys).length > 0)
         );
         
-        if (currentParticipant) {
+        // Prefer student_id over anonymous_id for display
+        const displayId = currentParticipantProgress?.student_id || currentParticipant || '';
+        
+        if (displayId) {
             if (isReturningUser) {
                 // Returning user - show "Welcome back"
                 welcomeText.textContent = translations[currentLanguage].dashboard_welcome;
-                nameEl.textContent = ` ${currentParticipant}`;
+                nameEl.textContent = ` ${displayId}`;
             } else {
                 // New user - just show "Welcome"
                 welcomeText.textContent = translations[currentLanguage].dashboard_welcome_new || 'Welcome';
-                nameEl.textContent = ` ${currentParticipant}`;
+                nameEl.textContent = ` ${displayId}`;
             }
             nameEl.style.fontWeight = '600';
         } else {
@@ -1399,28 +1403,46 @@ function renderDashboard() {
     const container = document.getElementById('video-cards-container');
     if (!container) {
         console.error('video-cards-container not found');
+        // Try to find it after a short delay (might not be rendered yet)
+        setTimeout(() => {
+            const retryContainer = document.getElementById('video-cards-container');
+            if (retryContainer && VIDEOS && VIDEOS.length > 0) {
+                retryContainer.innerHTML = '';
+                VIDEOS.forEach((video, index) => {
+                    const isCompleted = currentParticipantProgress.videos_completed?.includes(video.id) || false;
+                    const videoSurveyCompleted = currentParticipantProgress.video_surveys?.[video.id] || false;
+                    const card = createVideoCard(video, index + 1, isCompleted, videoSurveyCompleted);
+                    retryContainer.appendChild(card);
+                });
+            }
+        }, 200);
         return;
     }
     
     container.innerHTML = '';
     
     if (!VIDEOS || VIDEOS.length === 0) {
-        console.error('VIDEOS array is empty or undefined');
+        console.error('VIDEOS array is empty or undefined. VIDEOS =', VIDEOS);
         container.innerHTML = '<div class="col-12"><div class="alert alert-warning">No videos configured. Please check VIDEOS array in app.js</div></div>';
         return;
     }
     
+    console.log(`Rendering ${VIDEOS.length} video cards...`);
     VIDEOS.forEach((video, index) => {
         const isCompleted = currentParticipantProgress.videos_completed?.includes(video.id) || false;
         const videoSurveyCompleted = currentParticipantProgress.video_surveys?.[video.id] || false;
         const card = createVideoCard(video, index + 1, isCompleted, videoSurveyCompleted);
         container.appendChild(card);
+        console.log(`Video card ${index + 1} rendered for ${video.id}`);
     });
+    
+    console.log(`Successfully rendered ${VIDEOS.length} video cards`);
     
     // Update post-survey status
     updatePostSurveyStatus();
     
     console.log('Dashboard rendered successfully');
+    window.dashboardRendering = false;
 }
 
 // Update pre-survey status on dashboard
@@ -1430,24 +1452,14 @@ function updatePreSurveyStatus() {
     const viewBtn = document.getElementById('go-to-presurvey-btn');
     const warning = document.getElementById('presurvey-warning');
     
-    console.log('updatePreSurveyStatus called:', { 
-        isCompleted, 
-        hasBadge: !!badge, 
-        hasViewBtn: !!viewBtn, 
-        hasWarning: !!warning,
-        currentParticipantProgress: currentParticipantProgress 
-    });
-    
     if (badge) {
         const t = translations[currentLanguage];
         if (isCompleted) {
             badge.className = 'badge bg-success d-block mb-2';
             badge.textContent = '✓ ' + (t.pre_survey_completed || 'Completed');
-            console.log('Badge updated to completed');
         } else {
             badge.className = 'badge bg-secondary d-block mb-2';
             badge.textContent = (currentLanguage === 'en' ? 'Not Completed' : 'Nicht abgeschlossen');
-            console.log('Badge updated to not completed');
         }
     }
     
@@ -1459,16 +1471,13 @@ function updatePreSurveyStatus() {
         viewBtn.className = isCompleted
             ? 'btn btn-sm btn-outline-primary w-100'
             : 'btn btn-sm btn-primary w-100';
-        console.log('View button updated:', viewBtn.textContent);
     }
     
     if (warning) {
         if (!isCompleted) {
             warning.classList.remove('d-none');
-            console.log('Warning shown');
         } else {
             warning.classList.add('d-none');
-            console.log('Warning hidden');
         }
     }
 }
@@ -1555,6 +1564,7 @@ function createVideoCard(video, number, isCompleted, surveyCompleted) {
         startBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            console.log(`Start video button clicked for ${video.id}`);
             startVideoTask(video.id);
             return false;
         });
@@ -1564,7 +1574,10 @@ function createVideoCard(video, number, isCompleted, surveyCompleted) {
         viewBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            startVideoTask(video.id);
+            console.log(`View video button clicked for ${video.id}`);
+            // For completed videos, go directly to task page (skip video link page)
+            const videoNum = getVideoPageNumber(video.id);
+            continueToReflectionTask(videoNum);
             return false;
         });
     }
@@ -1587,19 +1600,17 @@ function showTutorialPage(videoId) {
         document.body.appendChild(tutorialPage);
     }
     
-    // Update tutorial page content (all elements that exist in the page)
+    // Update tutorial page content
     const titleEl = tutorialPage.querySelector('.tutorial-title');
+    const subtitleEl = tutorialPage.querySelector('.tutorial-subtitle');
     const descEl = tutorialPage.querySelector('.tutorial-description');
-    const checkboxLabel = tutorialPage.querySelector('label[for="tutorial-watched-check"]');
-    const continueBtn = tutorialPage.querySelector('#continue-after-tutorial span');
-    const warningText = tutorialPage.querySelector('.tutorial-warning-text');
+    const instructionsEl = tutorialPage.querySelector('.tutorial-instructions');
     const openBtn = tutorialPage.querySelector('#open-tutorial-btn');
     
-    if (titleEl) titleEl.textContent = t.tutorial_video_title || 'INFER Tutorial';
-    if (descEl) descEl.textContent = t.tutorial_video_description || 'This short video shows how to use the tool. Please watch the entire video to learn how to use the INFER feedback system effectively.';
-    if (checkboxLabel) checkboxLabel.textContent = t.tutorial_completed_checkbox || 'I have watched the tutorial video';
-    if (continueBtn) continueBtn.textContent = t.continue_after_tutorial || 'Continue';
-    if (warningText) warningText.textContent = t.tutorial_watch_until_end || 'Watch until end to continue';
+    if (titleEl) titleEl.textContent = t.tutorial_video_title || 'Tutorial: How to Use INFER';
+    if (subtitleEl) subtitleEl.textContent = t.tutorial_video_subtitle || 'Please watch this tutorial before starting Video 2';
+    if (descEl) descEl.textContent = t.tutorial_video_description || 'This short tutorial will explain how to use the INFER feedback system effectively.';
+    if (instructionsEl) instructionsEl.textContent = t.tutorial_watch_instructions || 'Click "Open Tutorial" to watch. After watching, click "Continue to Video Task".';
     
     if (openBtn) {
         openBtn.href = TUTORIAL_VIDEO.link;
@@ -1673,7 +1684,7 @@ function createTutorialPage() {
                                     </button>
                                 </div>
                                 <div class="alert alert-warning d-none py-1 px-2 mt-1 d-inline-block ms-2" id="tutorial-warning" style="font-size: 0.8rem;">
-                                    <span class="tutorial-warning-text">${t.tutorial_watch_until_end || 'Watch until end to continue'}</span>
+                                    <span>Watch until end to continue</span>
                                 </div>
                             </div>
                         </div>
@@ -1742,11 +1753,7 @@ function createTutorialPage() {
             if (!tutorialWatched) {
                 if (warning) {
                     warning.classList.remove('d-none');
-                    const t = translations[currentLanguage];
-                    const warningText = warning.querySelector('.tutorial-warning-text');
-                    if (warningText) {
-                        warningText.textContent = t.tutorial_watch_until_end || 'Watch until end to continue';
-                    }
+                    warning.textContent = 'Please watch the video until the end before continuing.';
                 }
                 return;
             }
@@ -1760,11 +1767,11 @@ function createTutorialPage() {
             // Mark tutorial as watched
             markTutorialWatched();
             
-            // Continue to the video link page (video task page) after tutorial
+            // Continue to the target video
             const targetVideoId = document.getElementById('page-tutorial').dataset.targetVideoId;
             if (targetVideoId) {
-                // Go to video link page first (this is the "video task page")
-                startVideoTaskAfterTutorial(targetVideoId);
+                const videoNum = getVideoPageNumber(targetVideoId);
+                continueToReflectionTask(videoNum);
             }
         });
     }
@@ -1942,6 +1949,44 @@ function setupVideoPageElements(videoNum) {
     setupConceptSectionExpandLogging(videoNum);
 }
 
+// Setup logging for concept section expand/collapse
+function setupConceptSectionExpandLogging(videoNum) {
+    const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
+    if (!conceptsSection) return;
+    
+    const definitionsContent = document.getElementById(`video-${videoNum}-definitions-content`);
+    if (!definitionsContent) return;
+    
+    let expandStartTime = null;
+    
+    // Listen for when the section is expanded (shown)
+    definitionsContent.addEventListener('shown.bs.collapse', () => {
+        expandStartTime = Date.now();
+        
+        logEvent('concept_section_expanded', {
+            video_id: `video${videoNum}`,
+            participant_name: currentParticipant,
+            timestamp: expandStartTime
+        });
+    });
+    
+    // Listen for when the section is collapsed (hidden)
+    definitionsContent.addEventListener('hidden.bs.collapse', () => {
+        if (expandStartTime) {
+            const durationSeconds = (Date.now() - expandStartTime) / 1000;
+            
+            logEvent('concept_section_collapsed', {
+                video_id: `video${videoNum}`,
+                participant_name: currentParticipant,
+                duration_seconds: durationSeconds,
+                timestamp: Date.now()
+            });
+            
+            expandStartTime = null;
+        }
+    });
+}
+
 // Setup click handlers for concept explanation cards
 function setupConceptCardClickHandlers(videoNum) {
     const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
@@ -1989,46 +2034,10 @@ function setupConceptCardClickHandlers(videoNum) {
     }
 }
 
-// Setup logging for concept section expand/collapse
-function setupConceptSectionExpandLogging(videoNum) {
-    const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
-    if (!conceptsSection) return;
-    
-    const definitionsContent = document.getElementById(`video-${videoNum}-definitions-content`);
-    if (!definitionsContent) return;
-    
-    let expandStartTime = null;
-    
-    // Listen for when the section is expanded (shown)
-    definitionsContent.addEventListener('shown.bs.collapse', () => {
-        expandStartTime = Date.now();
-        
-        logEvent('concept_section_expanded', {
-            video_id: `video${videoNum}`,
-            participant_name: currentParticipant,
-            timestamp: expandStartTime
-        });
-    });
-    
-    // Listen for when the section is collapsed (hidden)
-    definitionsContent.addEventListener('hidden.bs.collapse', () => {
-        if (expandStartTime) {
-            const durationSeconds = (Date.now() - expandStartTime) / 1000;
-            
-            logEvent('concept_section_collapsed', {
-                video_id: `video${videoNum}`,
-                participant_name: currentParticipant,
-                duration_seconds: durationSeconds,
-                timestamp: Date.now()
-            });
-            
-            expandStartTime = null;
-        }
-    });
-}
-
 // Start video task - now goes to video link page first
 async function startVideoTask(videoId) {
+    console.log(`startVideoTask called for ${videoId}`);
+    
     // Pre-survey is MANDATORY - block access if not completed
     if (!currentParticipantProgress?.pre_survey_completed) {
         const t = translations[currentLanguage];
@@ -2041,13 +2050,18 @@ async function startVideoTask(videoId) {
     currentVideoId = videoId;
     const video = VIDEOS.find(v => v.id === videoId);
     
-    if (!video) return;
-    
-    // Check if this video has a tutorial and tutorial hasn't been watched yet
-    if (video.hasTutorial && !currentParticipantProgress?.tutorial_watched) {
-        showTutorialPage(videoId);
+    if (!video) {
+        console.error(`Video not found: ${videoId}`);
         return;
     }
+    
+    console.log(`Found video:`, video);
+    
+    // Tutorial check removed for Beta (Treatment Group 2 has no tutorial)
+    // if (video.hasTutorial && !currentParticipantProgress?.tutorial_watched) {
+    //     showTutorialPage(videoId);
+    //     return;
+    // }
     
     const videoNum = getVideoPageNumber(videoId);
     
@@ -2250,7 +2264,6 @@ async function loadPreviousReflectionAndFeedbackForVideo(videoId, videoNum) {
                     if (submitBtn) submitBtn.disabled = true;
                     
                     // Show a message that this video is completed
-                    const t = translations[currentLanguage];
                     const completedMessage = currentLanguage === 'en' 
                         ? 'This video task has been completed and submitted. You can view your reflection and feedback, but cannot make further changes.'
                         : 'Diese Videoaufgabe wurde abgeschlossen und eingereicht. Sie können Ihre Reflexion und Ihr Feedback ansehen, aber keine weiteren Änderungen vornehmen.';
@@ -2295,10 +2308,29 @@ async function loadPreviousReflectionAndFeedbackForVideo(videoId, videoNum) {
                     feedbackShort.innerHTML = formatStructuredFeedback(reflection.feedback_short, analysisResult);
                 }
                 
-                // Show feedback tabs and buttons
+                // Check if video is already completed (submitted)
+                const isVideoCompleted = currentParticipantProgress?.videos_completed?.includes(videoId) || false;
+                
+                // Show feedback tabs
                 if (feedbackTabs) feedbackTabs.classList.remove('d-none');
-                if (reviseBtn) reviseBtn.style.display = 'inline-block';
-                if (submitBtn) submitBtn.style.display = 'block';
+                
+                // Only show revise/submit buttons if not completed
+                if (!isVideoCompleted) {
+                    if (reviseBtn) reviseBtn.style.display = 'inline-block';
+                    if (submitBtn) submitBtn.style.display = 'block';
+                } else {
+                    // Hide edit buttons for completed videos
+                    if (reviseBtn) reviseBtn.style.display = 'none';
+                    if (submitBtn) submitBtn.style.display = 'none';
+                    
+                    // Disable generate button
+                    const generateBtn = document.getElementById(ids.generateBtn);
+                    if (generateBtn) generateBtn.disabled = true;
+                    
+                    // Disable clear button
+                    const clearBtn = document.getElementById(ids.clearBtn);
+                    if (clearBtn) clearBtn.disabled = true;
+                }
                 
                 // Display analysis distribution if available
                 if (reflection.analysis_percentages) {
@@ -3007,16 +3039,16 @@ async function generateFeedback(reflection) {
             let warningMessage = '';
             if (isVeryShort && isNonRelevant) {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection is very short and does not relate to the teaching video. Please write a longer reflection (at least 50 words) about what you observed in the video."
-                    : "⚠️ Ihre Reflexion ist sehr kurz und bezieht sich nicht auf das Unterrichtsvideo. Bitte schreiben Sie eine längere Reflexion (mindestens 50 Wörter) über das, was Sie im Video beobachtet haben.";
+                    ? "⚠️ Your reflection is very short and does not relate to the teaching video. Please write a longer reflection (at least 50 words) that describes what you observed, explains why it happened using educational theories, and predicts the effects on student learning."
+                    : "⚠️ Ihre Reflexion ist sehr kurz und bezieht sich nicht auf das Unterrichtsvideo. Bitte schreiben Sie eine längere Reflexion (mindestens 50 Wörter), die beschreibt, was Sie beobachtet haben, erklärt, warum es passiert ist (unter Verwendung pädagogischer Theorien), und die Auswirkungen auf das Lernen der Schüler vorhersagt.";
             } else if (isVeryShort) {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection is very short (only " + wordCount + " words). Please expand it to at least 50 words."
-                    : "⚠️ Ihre Reflexion ist sehr kurz (nur " + wordCount + " Wörter). Bitte erweitern Sie sie auf mindestens 50 Wörter.";
+                    ? "⚠️ Your reflection is very short (only " + wordCount + " words). Please expand your reflection to at least 50 words, providing more detail about what you observed, why it happened, and its effects on student learning."
+                    : "⚠️ Ihre Reflexion ist sehr kurz (nur " + wordCount + " Wörter). Bitte erweitern Sie Ihre Reflexion auf mindestens 50 Wörter und geben Sie mehr Details zu dem, was Sie beobachtet haben, warum es passiert ist und welche Auswirkungen es auf das Lernen der Schüler hat.";
             } else {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection does not relate to the teaching video. Please write a reflection about what you observed in the video."
-                    : "⚠️ Ihre Reflexion bezieht sich nicht auf das Unterrichtsvideo. Bitte schreiben Sie eine Reflexion über das, was Sie im Video beobachtet haben.";
+                    ? "⚠️ Your reflection does not relate to the teaching video you watched. Please revise your reflection to focus on describing what you observed, explaining why it happened using educational theories, and predicting the effects on student learning."
+                    : "⚠️ Ihre Reflexion bezieht sich nicht auf das Unterrichtsvideo, das Sie sich angeschaut haben. Bitte überarbeiten Sie Ihre Reflexion, um sich auf die Beschreibung Ihrer Beobachtungen, die Erklärung mit Hilfe pädagogischer Theorien und die Vorhersage der Auswirkungen auf das Lernen der Schüler zu konzentrieren.";
             }
             
             logEvent('non_relevant_reflection_detected', {
@@ -3617,29 +3649,6 @@ function switchLanguage(lang) {
         }
     }
     
-    // Update tutorial page if it's visible
-    const tutorialPage = document.getElementById('page-tutorial');
-    if (tutorialPage && !tutorialPage.classList.contains('d-none')) {
-        const t = translations[currentLanguage];
-        const titleEl = tutorialPage.querySelector('.tutorial-title');
-        const subtitleEl = tutorialPage.querySelector('.tutorial-subtitle');
-        const descEl = tutorialPage.querySelector('.tutorial-description');
-        const instructionsEl = tutorialPage.querySelector('.tutorial-instructions');
-        const checkboxLabel = tutorialPage.querySelector('label[for="tutorial-watched-check"]');
-        const continueBtn = tutorialPage.querySelector('#continue-after-tutorial span');
-        const warningText = tutorialPage.querySelector('.tutorial-warning-text');
-        const openBtn = tutorialPage.querySelector('#open-tutorial-btn span');
-        
-        if (titleEl) titleEl.textContent = t.tutorial_video_title || 'INFER Tutorial';
-        if (subtitleEl) subtitleEl.textContent = t.tutorial_video_subtitle || 'Please watch this tutorial before starting Video 2';
-        if (descEl) descEl.textContent = t.tutorial_video_description || 'This short video shows how to use the tool. Please watch the entire video to learn how to use the INFER feedback system effectively.';
-        if (instructionsEl) instructionsEl.textContent = t.tutorial_watch_instructions || 'Click "Open Tutorial" to watch. After watching, click "Continue to Video Task".';
-        if (checkboxLabel) checkboxLabel.textContent = t.tutorial_completed_checkbox || 'I have watched the tutorial video';
-        if (continueBtn) continueBtn.textContent = t.continue_after_tutorial || 'Continue';
-        if (warningText) warningText.textContent = t.tutorial_watch_until_end || 'Watch until end to continue';
-        if (openBtn) openBtn.textContent = t.open_tutorial || 'Open Tutorial';
-    }
-    
     // Log language change with participant info (only if logEvent is available)
     if (typeof logEvent === 'function') {
         logEvent('language_change', {
@@ -3665,17 +3674,20 @@ function renderLanguageSwitchers() {
                 <button type="button" class="btn ${currentLanguage === 'de' ? 'btn-primary' : 'btn-outline-primary'}" id="lang-switch-de" title="${tooltipText}">Deutsch</button>
             </div>
         `;
-        
-        // Initialize Bootstrap tooltips for this container
+    });
+    
+    // Add event listeners
+    document.getElementById('lang-switch-en')?.addEventListener('click', () => switchLanguage('en'));
+    document.getElementById('lang-switch-de')?.addEventListener('click', () => switchLanguage('de'));
+    
+    // Initialize Bootstrap tooltips
+    containers.forEach(container => {
         const tooltipTriggerList = container.querySelectorAll('[title]');
         tooltipTriggerList.forEach(tooltipTriggerEl => {
             new bootstrap.Tooltip(tooltipTriggerEl);
         });
     });
-    
-    // Add event listeners (only need to add once, not per container)
-    document.getElementById('lang-switch-en')?.addEventListener('click', () => switchLanguage('en'));
-    document.getElementById('lang-switch-de')?.addEventListener('click', () => switchLanguage('de'));
+}
 
 function renderLanguageSwitcherInNav() {
     const navContainer = document.querySelector('.language-switcher-container-inline');
@@ -3695,12 +3707,6 @@ function renderLanguageSwitcherInNav() {
         // Add event listeners
         document.getElementById('nav-lang-switch-en')?.addEventListener('click', () => switchLanguage('en'));
         document.getElementById('nav-lang-switch-de')?.addEventListener('click', () => switchLanguage('de'));
-        
-        // Initialize Bootstrap tooltips
-        const tooltipTriggerList = navContainer.querySelectorAll('[title]');
-        tooltipTriggerList.forEach(tooltipTriggerEl => {
-            new bootstrap.Tooltip(tooltipTriggerEl);
-        });
     }
     
     // Also render language switcher in dashboard header
@@ -3754,6 +3760,13 @@ function applyTranslations() {
                     element.innerHTML = t[key];
                 } else {
                     element.textContent = t[key];
+                }
+            }
+            // Special handling for back-to-dashboard buttons - update span inside button
+            else if (element.classList && element.classList.contains('back-to-dashboard-btn')) {
+                const span = element.querySelector('span[data-lang-key="back_to_dashboard"]');
+                if (span && t.back_to_dashboard) {
+                    span.textContent = t.back_to_dashboard;
                 }
             } 
             // For input elements, check if they should have placeholder updated
