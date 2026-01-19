@@ -1015,7 +1015,14 @@ function showPage(pageId) {
                     titleEl.textContent = translations[currentLanguage].video_task_title;
                 }
                 if (subtitleEl) {
-                    subtitleEl.textContent = translations[currentLanguage].video_task_subtitle;
+                    // Show different subtitle based on whether video has INFER feedback
+                    if (video.hasINFER) {
+                        subtitleEl.setAttribute('data-lang-key', 'video_task_subtitle');
+                        subtitleEl.textContent = translations[currentLanguage].video_task_subtitle;
+                    } else {
+                        subtitleEl.setAttribute('data-lang-key', 'reflection_only_mode');
+                        subtitleEl.textContent = translations[currentLanguage].reflection_only_mode || 'Write your reflection about the video. After submission, you will proceed to a short questionnaire.';
+                    }
                 }
             }
         }
@@ -1884,7 +1891,19 @@ function getVideoElementIds(videoNum) {
 
 // Setup event listeners for a specific video page
 function setupVideoPageElements(videoNum) {
+    const videoId = `video${videoNum}`;
+    const video = VIDEOS.find(v => v.id === videoId);
     const ids = getVideoElementIds(videoNum);
+    
+    // Hide or show language toggle (Feedback Language selector) based on hasINFER
+    const languageToggle = document.querySelector(`#page-video-${videoNum} .language-toggle`);
+    if (languageToggle) {
+        if (video && video.hasINFER) {
+            languageToggle.style.display = '';
+        } else {
+            languageToggle.style.display = 'none';
+        }
+    }
     
     // Set up event listeners
     const reflectionText = document.getElementById(ids.reflectionText);
@@ -2175,6 +2194,16 @@ function configureVideoTaskUI(videoNum, hasINFER) {
     const reviseBtn = document.getElementById(ids.reviseBtn);
     const copyBtn = document.getElementById(ids.copyBtn);
     const conceptsSection = document.getElementById(`video-${videoNum}-concepts-section`);
+    
+    // Hide or show language toggle (Feedback Language selector) based on hasINFER
+    const languageToggle = document.querySelector(`#page-video-${videoNum} .language-toggle`);
+    if (languageToggle) {
+        if (hasINFER) {
+            languageToggle.style.display = '';
+        } else {
+            languageToggle.style.display = 'none';
+        }
+    }
     
     if (hasINFER) {
         // INFER mode: Show generate button and submit button
@@ -3644,7 +3673,14 @@ function switchLanguage(lang) {
                     titleEl.textContent = translations[currentLanguage].video_task_title;
                 }
             if (subtitleEl) {
-                subtitleEl.textContent = translations[currentLanguage].video_task_subtitle;
+                // Show different subtitle based on whether video has INFER feedback
+                if (video.hasINFER) {
+                    subtitleEl.setAttribute('data-lang-key', 'video_task_subtitle');
+                    subtitleEl.textContent = translations[currentLanguage].video_task_subtitle;
+                } else {
+                    subtitleEl.setAttribute('data-lang-key', 'reflection_only_mode');
+                    subtitleEl.textContent = translations[currentLanguage].reflection_only_mode || 'Write your reflection about the video. After submission, you will proceed to a short questionnaire.';
+                }
             }
         }
     }
