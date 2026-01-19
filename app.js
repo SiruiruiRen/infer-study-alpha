@@ -44,7 +44,7 @@ const VIDEOS = [
 
 // Tutorial Video Configuration (shown before Video 2 for Treatment Group 1)
 const TUTORIAL_VIDEO = {
-    link: 'tutorial_german.mp4', // Local file in root
+    link: 'Jan19Tutorial.mp4', // Local file in root
     password: '' // No password for local file
 };
 
