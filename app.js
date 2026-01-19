@@ -925,8 +925,9 @@ function handleTabSwitch() {
                 video_id: currentVideoId,
                 participant_name: currentParticipant || null,
                 language: currentLanguage,
-            timestamp: new Date().toISOString()
-        });
+                timestamp: new Date().toISOString()
+            });
+        }
         
         // Check if on any video task page (video-1, video-2, video-3, video-4)
         // Exclude video link pages and survey pages
@@ -4628,12 +4629,13 @@ window.addEventListener('beforeunload', () => {
         endFeedbackViewing(currentTaskState.currentFeedbackType, currentLanguage);
     }
     
-    logEvent('session_end', {
-        session_duration: Date.now() - performance.timing.navigationStart,
-        language: currentLanguage,
-        final_page: currentPage,
-        video_id: currentVideoId,
-        participant_name: currentParticipant || null
-    });
+    if (typeof logEvent === 'function') {
+        logEvent('session_end', {
+            session_duration: Date.now() - performance.timing.navigationStart,
+            language: currentLanguage,
+            final_page: currentPage,
+            video_id: currentVideoId,
+            participant_name: currentParticipant || null
+        });
+    }
 });
-}
