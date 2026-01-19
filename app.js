@@ -1818,7 +1818,7 @@ function createTutorialPage() {
             }
             
             // Mark tutorial as watched
-            await markTutorialWatched();
+            markTutorialWatched();
             
             // Continue to the target video - show video link page (not directly to reflection)
             const targetVideoId = document.getElementById('page-tutorial').dataset.targetVideoId;
