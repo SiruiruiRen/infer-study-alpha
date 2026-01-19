@@ -551,27 +551,28 @@ textarea {
 }
 
 /* Modern colored sections with clean left borders */
+/* Removed border-left from headings - only section has border */
 .feedback-section-description h4.feedback-heading {
   background: #ffffff;
-  border-left: 4px solid #00ACC1;
+  border-left: none;
   color: #1a1a1a;
 }
 
 .feedback-section-explanation h4.feedback-heading {
   background: #ffffff;
-  border-left: 4px solid #7B1FA2;
+  border-left: none;
   color: #1a1a1a;
 }
 
 .feedback-section-prediction h4.feedback-heading {
   background: #ffffff;
-  border-left: 4px solid #388E3C;
+  border-left: none;
   color: #1a1a1a;
 }
 
 .feedback-section-overall h4.feedback-heading {
   background: #ffffff;
-  border-left: 4px solid #3F51B5;
+  border-left: none;
   color: #1a1a1a;
 }
 
@@ -1996,18 +1997,18 @@ textarea {
   margin-bottom: 0.5rem !important;
 }
 
-/* Keep colored left border for section headings inside .feedback-content */
+/* Removed border-left from headings - only section has border */
 .feedback-content .feedback-section-description h4 {
-  border-left: 4px solid #00ACC1 !important;
+  border-left: none !important;
 }
 .feedback-content .feedback-section-explanation h4 {
-  border-left: 4px solid #7B1FA2 !important;
+  border-left: none !important;
 }
 .feedback-content .feedback-section-prediction h4 {
-  border-left: 4px solid #388E3C !important;
+  border-left: none !important;
 }
 .feedback-content .feedback-section-overall h4 {
-  border-left: 4px solid #3F51B5 !important;
+  border-left: none !important;
 } 
 
 .feedback-keyword {
