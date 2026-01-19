@@ -3510,8 +3510,12 @@ async function markVideoCompleted() {
 // Language Management Functions
 function switchLanguage(lang) {
     currentLanguage = lang;
-    renderLanguageSwitchers();
-    renderLanguageSwitcherInNav();
+    if (typeof renderLanguageSwitchers === 'function') {
+        renderLanguageSwitchers();
+    }
+    if (typeof renderLanguageSwitcherInNav === 'function') {
+        renderLanguageSwitcherInNav();
+    }
     applyTranslations();
     
     // Update all language radio buttons (including video pages and general language switchers)
