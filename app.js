@@ -1429,14 +1429,24 @@ function updatePreSurveyStatus() {
     const viewBtn = document.getElementById('go-to-presurvey-btn');
     const warning = document.getElementById('presurvey-warning');
     
+    console.log('updatePreSurveyStatus called:', { 
+        isCompleted, 
+        hasBadge: !!badge, 
+        hasViewBtn: !!viewBtn, 
+        hasWarning: !!warning,
+        currentParticipantProgress: currentParticipantProgress 
+    });
+    
     if (badge) {
         const t = translations[currentLanguage];
         if (isCompleted) {
             badge.className = 'badge bg-success d-block mb-2';
             badge.textContent = '✓ ' + (t.pre_survey_completed || 'Completed');
+            console.log('Badge updated to completed');
         } else {
             badge.className = 'badge bg-secondary d-block mb-2';
             badge.textContent = (currentLanguage === 'en' ? 'Not Completed' : 'Nicht abgeschlossen');
+            console.log('Badge updated to not completed');
         }
     }
     
@@ -1448,13 +1458,16 @@ function updatePreSurveyStatus() {
         viewBtn.className = isCompleted
             ? 'btn btn-sm btn-outline-primary w-100'
             : 'btn btn-sm btn-primary w-100';
+        console.log('View button updated:', viewBtn.textContent);
     }
     
     if (warning) {
         if (!isCompleted) {
             warning.classList.remove('d-none');
+            console.log('Warning shown');
         } else {
             warning.classList.add('d-none');
+            console.log('Warning hidden');
         }
     }
 }
@@ -2576,25 +2589,38 @@ function updatePreSurveyPage() {
 
 // Mark pre-survey complete
 async function markPreSurveyComplete() {
-    if (!supabase || !currentParticipant) return;
+    console.log('markPreSurveyComplete called', { currentParticipant, currentParticipantProgress });
+    
+    if (!supabase || !currentParticipant) {
+        console.warn('Cannot mark pre-survey complete:', { supabase: !!supabase, currentParticipant });
+        return;
+    }
     
     try {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('participant_progress')
             .update({ 
                 pre_survey_completed: true,
                 last_active_at: new Date().toISOString()
             })
-            .eq('participant_name', currentParticipant);
+            .eq('participant_name', currentParticipant)
+            .select()
+            .single();
         
-        if (error) console.error('Error marking pre-survey complete:', error);
-        else {
+        if (error) {
+            console.error('Error marking pre-survey complete:', error);
+        } else {
+            console.log('Pre-survey marked complete in DB:', data);
             currentParticipantProgress.pre_survey_completed = true;
             updatePreSurveyStatus(); // Update dashboard status
-            logEvent('pre_survey_completed', { 
-                participant_name: currentParticipant,
-                language: currentLanguage
-            });
+            console.log('Updated pre-survey status, currentParticipantProgress:', currentParticipantProgress);
+            
+            if (typeof logEvent === 'function') {
+                logEvent('pre_survey_completed', { 
+                    participant_name: currentParticipant,
+                    language: currentLanguage
+                });
+            }
         }
     } catch (error) {
         console.error('Error in markPreSurveyComplete:', error);
