@@ -583,7 +583,7 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
         // Coming from assignment site - completely skip login/consent pages, go directly to dashboard
         console.log('Coming from assignment site, skipping login/consent, going directly to dashboard...', { studentId, anonymousId });
         
-        // Don't show login page - wait for functions and go directly to dashboard
+        // IMPORTANT: Don't show login page - wait for functions and go directly to dashboard
         // Wait for all required functions to be ready, then login directly
         const attemptDirectLogin = async () => {
             // Check if all required functions are available
@@ -592,15 +592,21 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
             const hasDirectLogin = typeof directLoginFromAssignment === 'function';
             const hasShowPage = typeof showPage === 'function';
             const hasRenderDashboard = typeof renderDashboard === 'function';
+            const hasSupabase = supabase !== null && supabase !== undefined;
             
             if (hasLoadProgress && hasCreateProgress && hasDirectLogin && hasShowPage && hasRenderDashboard) {
-                console.log('All functions ready, attempting direct login...');
+                console.log('All functions ready, attempting direct login...', {
+                    supabase: hasSupabase,
+                    studentId,
+                    anonymousId
+                });
                 try {
                     await directLoginFromAssignment(studentId, anonymousId);
                 } catch (error) {
                     console.error('Error in directLoginFromAssignment:', error);
                     // Fallback: show login page if direct login fails
                     if (hasShowPage) {
+                        console.warn('Direct login failed, showing login page as fallback');
                         showPage('login');
                     }
                 }
@@ -610,17 +616,21 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
                     createParticipantProgress: hasCreateProgress,
                     directLoginFromAssignment: hasDirectLogin,
                     showPage: hasShowPage,
-                    renderDashboard: hasRenderDashboard
+                    renderDashboard: hasRenderDashboard,
+                    supabase: hasSupabase
                 });
                 setTimeout(attemptDirectLogin, 200);
             }
         };
         
-        // Start direct login after a short delay to ensure all functions are loaded
+        // Start direct login after a delay to ensure all functions are loaded
+        // Don't show login page - we'll go directly to dashboard
         setTimeout(attemptDirectLogin, 500);
     } else {
         // Direct visitor - show login page (welcome page stays hidden)
-        showPage('login');
+        if (typeof showPage === 'function') {
+            showPage('login');
+        }
     }
     
     // Log session start (only if logEvent is available)
