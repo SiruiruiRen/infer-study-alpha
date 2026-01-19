@@ -1818,13 +1818,12 @@ function createTutorialPage() {
             }
             
             // Mark tutorial as watched
-            markTutorialWatched();
+            await markTutorialWatched();
             
-            // Continue to the target video
+            // Continue to the target video - show video link page (not directly to reflection)
             const targetVideoId = document.getElementById('page-tutorial').dataset.targetVideoId;
             if (targetVideoId) {
-                const videoNum = getVideoPageNumber(targetVideoId);
-                continueToReflectionTask(videoNum);
+                startVideoTaskAfterTutorial(targetVideoId);
             }
         });
     }
