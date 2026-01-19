@@ -1682,13 +1682,17 @@ function showTutorialPage(videoId) {
     // Store the target video ID
     tutorialPage.dataset.targetVideoId = videoId;
     
-    // Reset tutorial tracking when showing tutorial page again
-    if (tutorialPlayCount > 0) {
+    // Log tutorial page visit (first time or revisit)
+    const isRevisit = tutorialPlayCount > 0;
+    
+    if (isRevisit) {
         // User is watching tutorial again
         logEvent('tutorial_page_revisited', {
             participant_name: currentParticipant,
             target_video_id: videoId,
-            previous_play_count: tutorialPlayCount
+            previous_play_count: tutorialPlayCount,
+            total_watch_time_before: tutorialTotalWatchTime,
+            language: currentLanguage
         });
     }
     
@@ -1698,7 +1702,10 @@ function showTutorialPage(videoId) {
     logEvent('tutorial_page_shown', {
         participant_name: currentParticipant,
         target_video_id: videoId,
-        is_first_view: tutorialPlayCount === 0
+        is_first_view: !isRevisit,
+        is_revisit: isRevisit,
+        previous_play_count: tutorialPlayCount,
+        language: currentLanguage
     });
 }
 
@@ -2107,6 +2114,25 @@ function setupVideoPageElements(videoNum) {
     const submitBtn = document.getElementById(ids.submitBtn);
     if (submitBtn) {
         submitBtn.addEventListener('click', () => handleFinalSubmissionForVideo(videoNum));
+    }
+    
+    // Tutorial button - allow re-watching tutorial (for Video 2 in Alpha group)
+    const tutorialBtn = document.getElementById(`video-${videoNum}-tutorial-btn`);
+    if (tutorialBtn) {
+        tutorialBtn.addEventListener('click', () => {
+            // Log tutorial button click (re-watch)
+            logEvent('tutorial_button_clicked', {
+                participant_name: currentParticipant,
+                video_id: videoId,
+                video_num: videoNum,
+                is_replay: tutorialPlayCount > 0,
+                previous_play_count: tutorialPlayCount,
+                language: currentLanguage
+            });
+            
+            // Show tutorial page (will handle re-visit logging)
+            showTutorialPage(videoId);
+        });
     }
     
     const extendedTab = document.getElementById(ids.extendedTab);
