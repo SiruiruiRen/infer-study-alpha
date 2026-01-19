@@ -488,34 +488,49 @@ async function directLoginFromAssignment(studentId, anonymousId) {
         currentParticipant = participantCode;
         currentParticipantProgress = progress;
         
-        // Verify treatment_group matches current site (prevent group switching)
+        // Verify treatment_group matches current site - auto-redirect if wrong site
         const existingTreatmentGroup = progress.treatment_group;
         if (existingTreatmentGroup && existingTreatmentGroup !== STUDY_CONDITION) {
-            console.warn(`Participant ${participantCode} is assigned to ${existingTreatmentGroup} but accessing ${STUDY_CONDITION} site`);
-            if (typeof showAlert === 'function') {
-                showAlert(
-                    `Error: You are registered in a different study group (${existingTreatmentGroup}). Please use the correct link for your assigned group. Access blocked.`,
-                    'danger'
-                );
+            // Silently redirect to correct site without exposing group information
+            const STUDY_GROUP_URLS = {
+                'treatment_1': 'https://infer-study-alpha.onrender.com',
+                'treatment_2': 'https://infer-study-beta.onrender.com',
+                'control': 'https://infer-study-gamma.onrender.com'
+            };
+            const correctUrl = STUDY_GROUP_URLS[existingTreatmentGroup];
+            if (correctUrl) {
+                // Get student_id and anonymous_id from URL or current state
+                const urlParams = new URLSearchParams(window.location.search);
+                const studentId = urlParams.get('student_id') || progress.student_id;
+                const anonymousId = urlParams.get('anonymous_id') || participantCode;
+                
+                // Log event without exposing group names
+                if (typeof logEvent === 'function') {
+                    logEvent('site_redirect', {
+                        participant_name: participantCode,
+                        redirect_reason: 'wrong_site'
+                    });
+                }
+                
+                // Redirect to correct site
+                let redirectUrl = correctUrl;
+                if (studentId && anonymousId) {
+                    redirectUrl = `${correctUrl}?student_id=${encodeURIComponent(studentId)}&anonymous_id=${encodeURIComponent(anonymousId)}`;
+                }
+                window.location.href = redirectUrl;
+                return;
             }
-            if (typeof logEvent === 'function') {
-                logEvent('wrong_site_access_attempt', {
-                    participant_name: participantCode,
-                    assigned_group: existingTreatmentGroup,
-                    attempted_site: STUDY_CONDITION
-                });
-            }
-            return;
+        }
         } else if (!existingTreatmentGroup) {
             // If treatment_group is missing, set it based on current site
-            console.log(`Setting missing treatment_group to ${STUDY_CONDITION} for ${participantCode}`);
+            // Setting missing treatment_group (don't log to avoid exposing group assignment)
             if (supabase) {
                 supabase.from('participant_progress')
                     .update({ treatment_group: STUDY_CONDITION })
                     .eq('participant_name', participantCode)
                     .then(() => {
                         currentParticipantProgress.treatment_group = STUDY_CONDITION;
-                        console.log('Updated treatment_group for', participantCode);
+                        // Updated treatment_group (don't log to avoid exposing group assignment)
                     });
             }
         }
@@ -537,7 +552,7 @@ async function directLoginFromAssignment(studentId, anonymousId) {
                 .then(() => console.log('Updated last_active_at, student_id, and anonymous_id for', participantCode));
         }
         
-        console.log('Restored progress for', participantCode, ':', currentParticipantProgress);
+        // Progress restored (don't log full object to avoid exposing group assignment)
         
         // Go directly to dashboard (renderDashboard will be called by showPage)
         if (typeof showPage === 'function') {
@@ -563,10 +578,9 @@ async function directLoginFromAssignment(studentId, anonymousId) {
         if (typeof logEvent === 'function') {
             logEvent('participant_registered', {
                 participant_name: participantCode,
-                assigned_condition: condition,
-                treatment_group: STUDY_CONDITION,
                 student_id: studentId,
                 anonymous_id: participantCode
+                // Don't log assigned_condition or treatment_group to avoid exposing group assignment
             });
         }
         
@@ -1157,33 +1171,48 @@ async function handleLogin() {
         currentParticipant = participantCode;
         currentParticipantProgress = progress;
         
-        // Verify treatment_group matches current site (prevent group switching)
+        // Verify treatment_group matches current site - auto-redirect if wrong site
         const existingTreatmentGroup = progress.treatment_group;
         if (existingTreatmentGroup && existingTreatmentGroup !== STUDY_CONDITION) {
-            console.warn(`Participant ${participantCode} is assigned to ${existingTreatmentGroup} but accessing ${STUDY_CONDITION} site`);
-            showAlert(
-                `Error: You are registered in a different study group (${existingTreatmentGroup}). Please use the correct link for your assigned group. Access blocked.`,
-                'danger'
-            );
-            // Block access - don't allow them to continue
-            if (typeof logEvent === 'function') {
-                logEvent('wrong_site_access_attempt', {
-                    participant_name: participantCode,
-                    assigned_group: existingTreatmentGroup,
-                    attempted_site: STUDY_CONDITION
-                });
+            // Silently redirect to correct site without exposing group information
+            const STUDY_GROUP_URLS = {
+                'treatment_1': 'https://infer-study-alpha.onrender.com',
+                'treatment_2': 'https://infer-study-beta.onrender.com',
+                'control': 'https://infer-study-gamma.onrender.com'
+            };
+            const correctUrl = STUDY_GROUP_URLS[existingTreatmentGroup];
+            if (correctUrl) {
+                // Get student_id and anonymous_id from URL or current state
+                const urlParams = new URLSearchParams(window.location.search);
+                const studentId = urlParams.get('student_id') || progress.student_id;
+                const anonymousId = urlParams.get('anonymous_id') || participantCode;
+                
+                // Log event without exposing group names
+                if (typeof logEvent === 'function') {
+                    logEvent('site_redirect', {
+                        participant_name: participantCode,
+                        redirect_reason: 'wrong_site'
+                    });
+                }
+                
+                // Redirect to correct site
+                let redirectUrl = correctUrl;
+                if (studentId && anonymousId) {
+                    redirectUrl = `${correctUrl}?student_id=${encodeURIComponent(studentId)}&anonymous_id=${encodeURIComponent(anonymousId)}`;
+                }
+                window.location.href = redirectUrl;
+                return; // Exit function - don't proceed
             }
-            return; // Exit function - don't proceed
         } else if (!existingTreatmentGroup) {
             // If treatment_group is missing, set it based on current site
-            console.log(`Setting missing treatment_group to ${STUDY_CONDITION} for ${participantCode}`);
+            // Setting missing treatment_group (don't log to avoid exposing group assignment)
             if (supabase) {
                 supabase.from('participant_progress')
                     .update({ treatment_group: STUDY_CONDITION })
                     .eq('participant_name', participantCode)
                     .then(() => {
                         currentParticipantProgress.treatment_group = STUDY_CONDITION;
-                        console.log('Updated treatment_group for', participantCode);
+                        // Updated treatment_group (don't log to avoid exposing group assignment)
                     });
             }
         }
@@ -1216,7 +1245,7 @@ async function handleLogin() {
             resumeInfo.classList.remove('d-none');
         }
         
-        console.log('Restored progress for', participantCode, ':', currentParticipantProgress);
+        // Progress restored (don't log full object to avoid exposing group assignment)
         
         // Always show dashboard first - don't auto-navigate to pre-survey
         // Remove delay to make it smoother
@@ -1242,9 +1271,8 @@ async function handleLogin() {
         if (typeof logEvent === 'function') {
             logEvent('participant_registered', {
                 participant_name: participantCode,
-                treatment_group: STUDY_CONDITION,
-                study_version: STUDY_VERSION,
-                assigned_condition: condition
+                study_version: STUDY_VERSION
+                // Don't log treatment_group or assigned_condition to avoid exposing group assignment
             });
         }
         
@@ -1297,7 +1325,7 @@ async function loadParticipantProgress(participantName) {
         }
         
         if (data) {
-            console.log('Loaded progress for', participantName, ':', data);
+            // Progress loaded (don't log full object to avoid exposing group assignment)
             // Ensure arrays are properly initialized
             if (!data.videos_completed) data.videos_completed = [];
             if (!data.video_surveys) data.video_surveys = {};
@@ -1363,7 +1391,7 @@ async function createParticipantProgress(participantName, condition, studentId =
         } else if (error) {
             console.error('Error creating progress:', error);
         } else {
-            console.log(`Created progress for ${participantName} with treatment_group: ${STUDY_CONDITION}`);
+            // Progress created successfully (don't log treatment_group to avoid exposing group assignment)
         }
     } catch (error) {
         console.error('Error in createParticipantProgress:', error);
