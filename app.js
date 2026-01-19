@@ -3575,13 +3575,15 @@ function switchLanguage(lang) {
         if (openBtn) openBtn.textContent = t.open_tutorial || 'Open Tutorial';
     }
     
-    // Log language change with participant info
-    logEvent('language_change', {
-        new_language: lang,
-        participant_name: currentParticipant || null,
-        page: currentPage,
-        video_id: currentVideoId
-    });
+    // Log language change with participant info (only if logEvent is available)
+    if (typeof logEvent === 'function') {
+        logEvent('language_change', {
+            new_language: lang,
+            participant_name: currentParticipant || null,
+            page: currentPage,
+            video_id: currentVideoId
+        });
+    }
 }
 
 function renderLanguageSwitchers() {
