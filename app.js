@@ -583,24 +583,41 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
         // Coming from assignment site - completely skip login/consent pages, go directly to dashboard
         console.log('Coming from assignment site, skipping login/consent, going directly to dashboard...', { studentId, anonymousId });
         
+        // Don't show login page - wait for functions and go directly to dashboard
         // Wait for all required functions to be ready, then login directly
         const attemptDirectLogin = async () => {
-            if (typeof loadParticipantProgress === 'function' && 
-                typeof createParticipantProgress === 'function' &&
-                typeof directLoginFromAssignment === 'function') {
-                await directLoginFromAssignment(studentId, anonymousId);
+            // Check if all required functions are available
+            const hasLoadProgress = typeof loadParticipantProgress === 'function';
+            const hasCreateProgress = typeof createParticipantProgress === 'function';
+            const hasDirectLogin = typeof directLoginFromAssignment === 'function';
+            const hasShowPage = typeof showPage === 'function';
+            const hasRenderDashboard = typeof renderDashboard === 'function';
+            
+            if (hasLoadProgress && hasCreateProgress && hasDirectLogin && hasShowPage && hasRenderDashboard) {
+                console.log('All functions ready, attempting direct login...');
+                try {
+                    await directLoginFromAssignment(studentId, anonymousId);
+                } catch (error) {
+                    console.error('Error in directLoginFromAssignment:', error);
+                    // Fallback: show login page if direct login fails
+                    if (hasShowPage) {
+                        showPage('login');
+                    }
+                }
             } else {
-                console.log('Login functions not ready yet, retrying...', {
-                    loadParticipantProgress: typeof loadParticipantProgress,
-                    createParticipantProgress: typeof createParticipantProgress,
-                    directLoginFromAssignment: typeof directLoginFromAssignment
+                console.log('Functions not ready yet, retrying...', {
+                    loadParticipantProgress: hasLoadProgress,
+                    createParticipantProgress: hasCreateProgress,
+                    directLoginFromAssignment: hasDirectLogin,
+                    showPage: hasShowPage,
+                    renderDashboard: hasRenderDashboard
                 });
                 setTimeout(attemptDirectLogin, 200);
             }
         };
         
-        // Start direct login after a short delay
-        setTimeout(attemptDirectLogin, 300);
+        // Start direct login after a short delay to ensure all functions are loaded
+        setTimeout(attemptDirectLogin, 500);
     } else {
         // Direct visitor - show login page (welcome page stays hidden)
         showPage('login');
