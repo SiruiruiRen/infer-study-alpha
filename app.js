@@ -630,13 +630,13 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
                     renderDashboard: hasRenderDashboard,
                     supabase: hasSupabase
                 });
-                setTimeout(attemptDirectLogin, 200);
+                setTimeout(attemptDirectLogin, 100); // Reduced from 200ms to 100ms
             }
         };
         
         // Start direct login after a delay to ensure all functions are loaded
         // Don't show login page - we'll go directly to dashboard
-        setTimeout(attemptDirectLogin, 500);
+        setTimeout(attemptDirectLogin, 100); // Reduced from 500ms to 100ms
     } else {
         // Direct visitor - NOT ALLOWED: redirect to assignment site
         console.warn('Direct access not allowed. Redirecting to assignment site...');
