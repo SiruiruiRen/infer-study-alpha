@@ -604,11 +604,8 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
                     await directLoginFromAssignment(studentId, anonymousId);
                 } catch (error) {
                     console.error('Error in directLoginFromAssignment:', error);
-                    // Fallback: show login page if direct login fails
-                    if (hasShowPage) {
-                        console.warn('Direct login failed, showing login page as fallback');
-                        showPage('login');
-                    }
+                    // Show error message if direct login fails
+                    showAlert('Failed to login. Please return to the assignment site and try again.', 'danger');
                 }
             } else {
                 console.log('Functions not ready yet, retrying...', {
@@ -627,10 +624,13 @@ function initializeApp(comingFromAssignment = false, studentId = null, anonymous
         // Don't show login page - we'll go directly to dashboard
         setTimeout(attemptDirectLogin, 500);
     } else {
-        // Direct visitor - show login page (welcome page stays hidden)
-        if (typeof showPage === 'function') {
-            showPage('login');
-        }
+        // Direct visitor - NOT ALLOWED: redirect to assignment site
+        console.warn('Direct access not allowed. Redirecting to assignment site...');
+        const assignmentUrl = 'https://infer-study-assignment.onrender.com';
+        showAlert('Direct access is not allowed. Please access this site through the assignment page.', 'warning');
+        setTimeout(() => {
+            window.location.href = assignmentUrl;
+        }, 3000);
     }
     
     // Log session start (only if logEvent is available)
