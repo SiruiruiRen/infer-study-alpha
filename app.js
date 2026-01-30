@@ -145,8 +145,8 @@ const translations = {
         back_to_dashboard: "Dashboard",
         reflection_input: "Student Teacher Reflection",
         paste_reflection: "Paste or write your reflection here...",
-        write_reflection_placeholder: "Paste or write your reflection here...",
-        paste_reflection_placeholder: "Paste or write your reflection here...",
+        write_reflection_placeholder: "Please write at least 200 words...",
+        paste_reflection_placeholder: "Please write at least 200 words...",
         clear: "Clear",
         words: "words",
         generate_feedback: "Generate Feedback",
@@ -216,8 +216,8 @@ const translations = {
         final_submission_note: "You can continue revising your reflection until you're satisfied, then click this button when you're ready to move on.",
         continue_editing: "Continue Editing",
         confirm_submit: "Yes, Submit Final",
-        reflection_too_short: "Your reflection is too short. Please write at least 20 words before submitting.",
-        reflection_short_warning: "Your reflection is less than 50 words. We recommend writing at least 50 words for a more comprehensive reflection. Do you still want to submit?",
+        reflection_too_short: "Your text is short. Please write at least 200 words.",
+        reflection_short_warning: "Your text is short. Please write at least 200 words.",
         ai_usage_title: "Tab Switch Detected",
         ai_usage_message: "We noticed you switched to another tab. Did you use another AI system (such as ChatGPT) for your work on this task?",
         ai_usage_yes: "Yes, I used AI",
@@ -296,8 +296,8 @@ const translations = {
         back_to_dashboard: "Dashboard",
         reflection_input: "Reflexionstext",
         paste_reflection: "Fügen Sie hier Ihre Reflexion ein oder schreiben Sie sie hier...",
-        write_reflection_placeholder: "Fügen Sie hier Ihre Reflexion ein oder schreiben Sie sie hier...",
-        paste_reflection_placeholder: "Fügen Sie hier Ihre Reflexion ein oder schreiben Sie sie hier...",
+        write_reflection_placeholder: "Bitte schreiben Sie mindestens 200 Wörter...",
+        paste_reflection_placeholder: "Bitte schreiben Sie mindestens 200 Wörter...",
         clear: "Löschen",
         words: "Wörter",
         generate_feedback: "Feedback generieren",
@@ -382,8 +382,8 @@ const translations = {
         final_submission_note: "Sie können Ihre Reflexion weiterhin überarbeiten, bis Sie zufrieden sind. Klicken Sie dann auf diese Schaltfläche, wenn Sie bereit sind, fortzufahren.",
         continue_editing: "Weiter bearbeiten",
         confirm_submit: "Ja, endgültig einreichen",
-        reflection_too_short: "Ihre Reflexion ist zu kurz. Bitte schreiben Sie mindestens 20 Wörter, bevor Sie einreichen.",
-        reflection_short_warning: "Ihre Reflexion hat weniger als 50 Wörter. Wir empfehlen, mindestens 50 Wörter zu schreiben, um eine umfassendere Reflexion zu erhalten. Möchten Sie trotzdem einreichen?",
+        reflection_too_short: "Ihr Text ist zu kurz. Bitte schreiben Sie mindestens 200 Wörter.",
+        reflection_short_warning: "Ihr Text ist zu kurz. Bitte schreiben Sie mindestens 200 Wörter.",
         ai_usage_title: "Tab-Wechsel erkannt",
         ai_usage_message: "Wir haben bemerkt, dass Sie zu einem anderen Tab gewechselt haben. Haben Sie ein anderes KI-System (wie ChatGPT) für Ihre Arbeit an dieser Aufgabe verwendet?",
         ai_usage_yes: "Ja, ich habe KI verwendet",
@@ -3222,7 +3222,7 @@ async function generateFeedbackForVideo(reflection, videoNum) {
         
         // Step 0.5: Check for very short or non-relevant reflection
         const wordCount = reflection.split(/\s+/).length;
-        const isVeryShort = wordCount < 20;
+        const isVeryShort = wordCount < 150;
         
         // Step 1: Analyze reflection (binary classification at window level, then aggregated)
         const analysisResult = await analyzeReflectionDistribution(reflection, currentLanguage);
@@ -3239,12 +3239,12 @@ async function generateFeedbackForVideo(reflection, videoNum) {
             let warningMessage = '';
             if (isVeryShort && isNonRelevant) {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection is very short and does not relate to the teaching video. Please write a longer reflection (at least 50 words) about what you observed in the video."
-                    : "⚠️ Ihre Reflexion ist sehr kurz und bezieht sich nicht auf das Unterrichtsvideo. Bitte schreiben Sie eine längere Reflexion (mindestens 50 Wörter) über das, was Sie im Video beobachtet haben.";
+                    ? "⚠️ Your text is short and does not relate to the teaching video. Please write at least 200 words about what you observed in the video."
+                    : "⚠️ Ihr Text ist zu kurz und bezieht sich nicht auf das Unterrichtsvideo. Bitte schreiben Sie mindestens 200 Wörter über das, was Sie im Video beobachtet haben.";
             } else if (isVeryShort) {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection is very short (only " + wordCount + " words). Please expand it to at least 50 words."
-                    : "⚠️ Ihre Reflexion ist sehr kurz (nur " + wordCount + " Wörter). Bitte erweitern Sie sie auf mindestens 50 Wörter.";
+                    ? "⚠️ Your text is short (only " + wordCount + " words). Please write at least 200 words."
+                    : "⚠️ Ihr Text ist zu kurz (nur " + wordCount + " Wörter). Bitte schreiben Sie mindestens 200 Wörter.";
             } else {
                 warningMessage = currentLanguage === 'en'
                     ? "⚠️ Your reflection does not relate to the teaching video. Please write a reflection about what you observed in the video."
@@ -3458,7 +3458,7 @@ async function generateFeedback(reflection) {
         
         // Step 0.5: Check for very short or non-relevant reflection
         const wordCount = reflection.split(/\s+/).length;
-        const isVeryShort = wordCount < 20;
+        const isVeryShort = wordCount < 150;
         
         // Step 1: Analyze reflection (binary classification at window level, then aggregated)
         const analysisResult = await analyzeReflectionDistribution(reflection, currentLanguage);
@@ -3475,16 +3475,16 @@ async function generateFeedback(reflection) {
             let warningMessage = '';
             if (isVeryShort && isNonRelevant) {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection is very short and does not relate to the teaching video. Please write a longer reflection (at least 50 words) that describes what you observed, explains why it happened using educational theories, and predicts the effects on student learning."
-                    : "⚠️ Ihre Reflexion ist sehr kurz und bezieht sich nicht auf das Unterrichtsvideo. Bitte schreiben Sie eine längere Reflexion (mindestens 50 Wörter), die beschreibt, was Sie beobachtet haben, erklärt, warum es passiert ist (unter Verwendung pädagogischer Theorien), und die Auswirkungen auf das Lernen der Schüler vorhersagt.";
+                    ? "⚠️ Your text is short and does not relate to the teaching video. Please write at least 200 words about what you observed in the video."
+                    : "⚠️ Ihr Text ist zu kurz und bezieht sich nicht auf das Unterrichtsvideo. Bitte schreiben Sie mindestens 200 Wörter über das, was Sie im Video beobachtet haben.";
             } else if (isVeryShort) {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection is very short (only " + wordCount + " words). Please expand your reflection to at least 50 words, providing more detail about what you observed, why it happened, and its effects on student learning."
-                    : "⚠️ Ihre Reflexion ist sehr kurz (nur " + wordCount + " Wörter). Bitte erweitern Sie Ihre Reflexion auf mindestens 50 Wörter und geben Sie mehr Details zu dem, was Sie beobachtet haben, warum es passiert ist und welche Auswirkungen es auf das Lernen der Schüler hat.";
+                    ? "⚠️ Your text is short (only " + wordCount + " words). Please write at least 200 words."
+                    : "⚠️ Ihr Text ist zu kurz (nur " + wordCount + " Wörter). Bitte schreiben Sie mindestens 200 Wörter.";
             } else {
                 warningMessage = currentLanguage === 'en'
-                    ? "⚠️ Your reflection does not relate to the teaching video you watched. Please revise your reflection to focus on describing what you observed, explaining why it happened using educational theories, and predicting the effects on student learning."
-                    : "⚠️ Ihre Reflexion bezieht sich nicht auf das Unterrichtsvideo, das Sie sich angeschaut haben. Bitte überarbeiten Sie Ihre Reflexion, um sich auf die Beschreibung Ihrer Beobachtungen, die Erklärung mit Hilfe pädagogischer Theorien und die Vorhersage der Auswirkungen auf das Lernen der Schüler zu konzentrieren.";
+                    ? "⚠️ Your reflection does not relate to the teaching video you watched. Please revise your reflection to focus on describing what you observed."
+                    : "⚠️ Ihre Reflexion bezieht sich nicht auf das Unterrichtsvideo, das Sie sich angeschaut haben. Bitte überarbeiten Sie Ihre Reflexion, um sich auf die Beschreibung Ihrer Beobachtungen zu konzentrieren.";
             }
             
             logEvent('non_relevant_reflection_detected', {
@@ -3906,10 +3906,10 @@ function handleFinalSubmissionForVideo(videoNum) {
     
     const wordCount = reflectionText.trim().split(/\s+/).filter(word => word.length > 0).length;
     
-    // Require at least 20 words
-    if (wordCount < 20) {
+    // Require at least 150 words (recommend 200)
+    if (wordCount < 150) {
         const t = translations[currentLanguage];
-        showAlert(t.reflection_too_short || 'Your reflection is too short. Please write at least 20 words before submitting.', 'warning');
+        showAlert(t.reflection_too_short || 'Your text is short. Please write at least 200 words.', 'warning');
         return;
     }
     
@@ -4024,28 +4024,15 @@ async function submitReflectionOnly(videoNum) {
     
     const wordCount = reflectionText.trim().split(/\s+/).filter(word => word.length > 0).length;
     
-    // Require at least 20 words
-    if (wordCount < 20) {
+    // Require at least 150 words (recommend 200)
+    if (wordCount < 150) {
         const t = translations[currentLanguage];
-        showAlert(t.reflection_too_short || 'Your reflection is too short. Please write at least 20 words before submitting.', 'warning');
+        showAlert(t.reflection_too_short || 'Your text is short. Please write at least 200 words.', 'warning');
         if (submitBtn && originalSubmitHtml !== null) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalSubmitHtml;
         }
         return;
-    }
-    
-    // Warn if less than 50 words (but still allow submission)
-    if (wordCount < 50) {
-        const t = translations[currentLanguage];
-        const confirmed = confirm(t.reflection_short_warning || 'Your reflection is less than 50 words. We recommend writing at least 50 words for a more comprehensive reflection. Do you still want to submit?');
-        if (!confirmed) {
-            if (submitBtn && originalSubmitHtml !== null) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalSubmitHtml;
-            }
-            return;
-        }
     }
     
     // Make reflection read-only after final submission
@@ -4161,10 +4148,10 @@ async function confirmFinalSubmissionForVideo(videoNum) {
     
     const wordCount = reflectionText.trim().split(/\s+/).filter(word => word.length > 0).length;
     
-    // Require at least 20 words
-    if (wordCount < 20) {
+    // Require at least 150 words (recommend 200)
+    if (wordCount < 150) {
         const t = translations[currentLanguage];
-        showAlert(t.reflection_too_short || 'Your reflection is too short. Please write at least 20 words before submitting.', 'warning');
+        showAlert(t.reflection_too_short || 'Your text is short. Please write at least 200 words.', 'warning');
         
         // Restore button state
         const submitBtn = document.getElementById(ids.submitBtn);
@@ -4185,33 +4172,6 @@ async function confirmFinalSubmissionForVideo(videoNum) {
         document.body.style.paddingRight = '';
         
         return;
-    }
-    
-    // Warn if less than 50 words (but still allow submission)
-    if (wordCount < 50) {
-        const t = translations[currentLanguage];
-        const confirmed = confirm(t.reflection_short_warning || 'Your reflection is less than 50 words. We recommend writing at least 50 words for a more comprehensive reflection. Do you still want to submit?');
-        if (!confirmed) {
-            // Restore button state
-            const submitBtn = document.getElementById(ids.submitBtn);
-            const modal = document.getElementById('final-submission-modal');
-            if (modal) {
-                const storedOriginalHtml = modal.dataset.originalSubmitHtml;
-                if (submitBtn && storedOriginalHtml) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = storedOriginalHtml;
-                }
-            }
-            
-            // Clean up modal backdrop
-            const backdrop = document.querySelector('.modal-backdrop');
-            if (backdrop) backdrop.remove();
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            
-            return;
-        }
     }
     
     // Ensure reflection is saved to database before final submission
