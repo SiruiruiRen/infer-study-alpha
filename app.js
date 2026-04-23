@@ -38,7 +38,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const VIDEOS = [
     { id: 'video1', name: 'Video 1: 01 Palästina', link: 'https://unitc-my.sharepoint.com/:v:/g/personal/sebft01_cloud_uni-tuebingen_de/IQAlV5knBnzmSqXI1k6JcBQ4ASfhxX7-jlefJy63sKUHOpk?e=OClxDB', password: '01pana', hasINFER: false, hasTutorial: false },
     { id: 'video2', name: 'Video 2: 02 Spinne fängt Fliege', link: 'https://unitc-my.sharepoint.com/:v:/g/personal/sebft01_cloud_uni-tuebingen_de/IQBEKSXETHcOR5ArCxT4XuieAUt5frf9SMVOAPLbcfeq5B4?e=QXxVt2', password: '02spge', hasINFER: true, hasTutorial: true },
-    { id: 'video3', name: 'Video 3: 03 Höhendifferenz', link: 'https://unitc-my.sharepoint.com/:v:/g/personal/sebft01_cloud_uni-tuebingen_de/IQCWmAF5DMTVRqGfS2jO8z9XAdtkCcrnZlCYzS1eOJsNbyY?e=csJxJJ', password: '03honz', hasINFER: true, hasTutorial: false },
+    { id: 'video3', name: 'Video 3: 03 Höhendifferenz', link: 'https://unitc-my.sharepoint.com/:v:/g/personal/sebft01_cloud_uni-tuebingen_de/IQCWmAF5DMTVRqGfS2jO8z9XAdtkCcrnZlCYzS1eOJsNbyY?e=csJxJJ', password: '03honz', hasINFER: true, hasTutorial: false, hasOptionalTutorial: true },
     { id: 'video4', name: 'Video 4: 04 Binomische Formeln', link: 'https://unitc-my.sharepoint.com/:v:/g/personal/sebft01_cloud_uni-tuebingen_de/IQBIo8KImiVlQrNspfjpwuVlARSmJ3DOJhQ8uqroL0GKSkc?e=iexZCN', password: '04biln', hasINFER: false, hasTutorial: false }
 ];
 
@@ -232,6 +232,10 @@ const translations = {
         ai_usage_no: "No, I did not use AI",
         watch_tutorial: "Watch Tutorial",
         tutorial_video_title: "INFER Tutorial",
+        optional_tutorial_title: "Rewatch Tutorial?",
+        optional_tutorial_description: "Would you like to rewatch the INFER tutorial before starting this task? This is completely optional.",
+        optional_tutorial_rewatch: "Rewatch Tutorial",
+        optional_tutorial_skip: "Skip to Task",
         welcome_to_infer: "Welcome to INFER",
         welcome_message: "Thank you for participating in this study on AI-supported teaching reflection. The site is open from February 1 to March 31. We recommend that you complete one video each week, so that you have enough time for spaced practice. You will analyze 4 teaching videos using our INFER system.",
         browser_recommendation: "For the best experience, we recommend using <strong>Google Chrome</strong>.",
@@ -403,6 +407,10 @@ const translations = {
         ai_usage_no: "Nein, ich habe keine KI verwendet",
         watch_tutorial: "Tutorial ansehen",
         tutorial_video_title: "INFER Tutorial",
+        optional_tutorial_title: "Tutorial erneut ansehen?",
+        optional_tutorial_description: "Möchten Sie das INFER-Tutorial vor dieser Aufgabe erneut ansehen? Dies ist völlig freiwillig.",
+        optional_tutorial_rewatch: "Tutorial erneut ansehen",
+        optional_tutorial_skip: "Zur Aufgabe",
         loading_messages: [
             "Bitte warten Sie, während die kleinen Elfen Ihr Feedback erstellen...",
             "Fast geschafft, wir versprechen es...",
@@ -1897,6 +1905,91 @@ function showTutorialPage(videoId) {
     });
 }
 
+// Show optional tutorial rewatch choice before a video (e.g., before Video 3)
+function showOptionalTutorialChoice(videoId) {
+    const t = translations[currentLanguage];
+
+    let choicePage = document.getElementById('page-optional-tutorial-choice');
+    if (!choicePage) {
+        choicePage = document.createElement('div');
+        choicePage.id = 'page-optional-tutorial-choice';
+        choicePage.className = 'page-container d-none';
+        choicePage.innerHTML = `
+            <div class="main-container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <h4 class="mb-3 text-primary">
+                                    <i class="bi bi-play-circle me-2"></i>
+                                    <span id="optional-tutorial-title">${t.optional_tutorial_title || 'Rewatch Tutorial?'}</span>
+                                </h4>
+                                <p class="mb-4" id="optional-tutorial-description">
+                                    ${t.optional_tutorial_description || 'Would you like to rewatch the INFER tutorial before starting this task? This is completely optional.'}
+                                </p>
+                                <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
+                                    <button id="rewatch-tutorial-btn" class="btn btn-outline-primary px-4">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>
+                                        <span>${t.optional_tutorial_rewatch || 'Rewatch Tutorial'}</span>
+                                    </button>
+                                    <button id="skip-tutorial-btn" class="btn btn-success px-4">
+                                        <span>${t.optional_tutorial_skip || 'Skip to Task'}</span>
+                                        <i class="bi bi-arrow-right ms-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(choicePage);
+
+        // Attach handlers once
+        choicePage.querySelector('#rewatch-tutorial-btn').addEventListener('click', () => {
+            const targetVideoId = choicePage.dataset.targetVideoId;
+            logEvent('optional_tutorial_rewatch_chosen', {
+                participant_name: currentParticipant,
+                target_video_id: targetVideoId,
+                previous_play_count: tutorialPlayCount,
+                language: currentLanguage
+            });
+            showTutorialPage(targetVideoId);
+        });
+
+        choicePage.querySelector('#skip-tutorial-btn').addEventListener('click', () => {
+            const targetVideoId = choicePage.dataset.targetVideoId;
+            logEvent('optional_tutorial_skipped', {
+                participant_name: currentParticipant,
+                target_video_id: targetVideoId,
+                previous_play_count: tutorialPlayCount,
+                language: currentLanguage
+            });
+            startVideoTaskAfterTutorial(targetVideoId);
+        });
+    } else {
+        // Refresh translations on revisit
+        const titleEl = choicePage.querySelector('#optional-tutorial-title');
+        const descEl = choicePage.querySelector('#optional-tutorial-description');
+        const rewatchBtn = choicePage.querySelector('#rewatch-tutorial-btn span');
+        const skipBtn = choicePage.querySelector('#skip-tutorial-btn span');
+        if (titleEl) titleEl.textContent = t.optional_tutorial_title || 'Rewatch Tutorial?';
+        if (descEl) descEl.textContent = t.optional_tutorial_description || 'Would you like to rewatch the INFER tutorial before starting this task? This is completely optional.';
+        if (rewatchBtn) rewatchBtn.textContent = t.optional_tutorial_rewatch || 'Rewatch Tutorial';
+        if (skipBtn) skipBtn.textContent = t.optional_tutorial_skip || 'Skip to Task';
+    }
+
+    choicePage.dataset.targetVideoId = videoId;
+    showPage('optional-tutorial-choice');
+
+    logEvent('optional_tutorial_choice_shown', {
+        participant_name: currentParticipant,
+        target_video_id: videoId,
+        previous_play_count: tutorialPlayCount,
+        language: currentLanguage
+    });
+}
+
 // Track tutorial watch status
 let tutorialWatchProgress = 0;
 let tutorialWatched = false;
@@ -2471,7 +2564,13 @@ async function startVideoTask(videoId) {
         showTutorialPage(videoId);
         return;
     }
-    
+
+    // Check if optional tutorial rewatch should be offered (Alpha: Video 3)
+    if (video.hasOptionalTutorial && currentParticipantProgress?.tutorial_watched) {
+        showOptionalTutorialChoice(videoId);
+        return;
+    }
+
     const videoNum = getVideoPageNumber(videoId);
     
     // Update video link page with video info
