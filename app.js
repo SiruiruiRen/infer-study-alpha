@@ -5228,7 +5228,7 @@ async function generateWeightedFeedback(reflection, language, style, analysisRes
             { role: "system", content: languageInstruction + "\n\n" + systemPrompt },
             { role: "user", content: `Based on the analysis showing ${pctPriority.description}% description, ${pctPriority.explanation}% explanation, ${pctPriority.prediction}% prediction (Professional Vision: ${pctPriority.professional_vision}%) + Other: ${pctPriority.other}% = 100%, provide feedback for this reflection:\n\n${reflection}` }
         ],
-        temperature: 0.3,
+        temperature: 0.0,
         max_tokens: 2000
     };
     
