@@ -231,6 +231,7 @@ const translations = {
         ai_usage_yes: "Yes, I used AI",
         ai_usage_no: "No, I did not use AI",
         watch_tutorial: "Watch Tutorial",
+        qualtrics_loading_hint: "The survey may take a few seconds to load. Please be patient.",
         tutorial_video_title: "INFER Tutorial",
         optional_tutorial_title: "Rewatch Tutorial?",
         optional_tutorial_description: "Would you like to rewatch the INFER tutorial before starting this task? This is completely optional.",
@@ -406,6 +407,7 @@ const translations = {
         ai_usage_yes: "Ja, ich habe KI verwendet",
         ai_usage_no: "Nein, ich habe keine KI verwendet",
         watch_tutorial: "Tutorial ansehen",
+        qualtrics_loading_hint: "Die Umfrage kann einige Sekunden zum Laden brauchen. Bitte haben Sie Geduld.",
         tutorial_video_title: "INFER Tutorial",
         optional_tutorial_title: "Tutorial erneut ansehen?",
         optional_tutorial_description: "Möchten Sie das INFER-Tutorial vor dieser Aufgabe erneut ansehen? Dies ist völlig freiwillig.",
@@ -3423,7 +3425,7 @@ async function generateFeedbackForVideo(reflection, videoNum) {
         
         // Step 0.5: Check for very short or non-relevant reflection
         const wordCount = reflection.split(/\s+/).length;
-        const isVeryShort = wordCount < 300;
+        const isVeryShort = wordCount < 250;
         
         // Step 1: Analyze reflection (binary classification at window level, then aggregated)
         const analysisResult = await analyzeReflectionDistribution(reflection, currentLanguage);
@@ -3659,7 +3661,7 @@ async function generateFeedback(reflection) {
         
         // Step 0.5: Check for very short or non-relevant reflection
         const wordCount = reflection.split(/\s+/).length;
-        const isVeryShort = wordCount < 300;
+        const isVeryShort = wordCount < 250;
         
         // Step 1: Analyze reflection (binary classification at window level, then aggregated)
         const analysisResult = await analyzeReflectionDistribution(reflection, currentLanguage);
@@ -4107,8 +4109,8 @@ function handleFinalSubmissionForVideo(videoNum) {
     
     const wordCount = reflectionText.trim().split(/\s+/).filter(word => word.length > 0).length;
     
-    // Require at least 300 words (recommend 400 to participants)
-    if (wordCount < 300) {
+    // Require at least 250 words (tell participants 400)
+    if (wordCount < 250) {
         const t = translations[currentLanguage];
         showAlert(t.reflection_too_short || 'Your text is short. Please write at least 400 words.', 'warning');
         return;
@@ -4225,8 +4227,8 @@ async function submitReflectionOnly(videoNum) {
     
     const wordCount = reflectionText.trim().split(/\s+/).filter(word => word.length > 0).length;
     
-    // Require at least 300 words (recommend 400 to participants)
-    if (wordCount < 300) {
+    // Require at least 250 words (tell participants 400)
+    if (wordCount < 250) {
         const t = translations[currentLanguage];
         showAlert(t.reflection_too_short || 'Your text is short. Please write at least 400 words.', 'warning');
         if (submitBtn && originalSubmitHtml !== null) {
@@ -4349,8 +4351,8 @@ async function confirmFinalSubmissionForVideo(videoNum) {
     
     const wordCount = reflectionText.trim().split(/\s+/).filter(word => word.length > 0).length;
     
-    // Require at least 300 words (recommend 400 to participants)
-    if (wordCount < 300) {
+    // Require at least 250 words (tell participants 400)
+    if (wordCount < 250) {
         const t = translations[currentLanguage];
         showAlert(t.reflection_too_short || 'Your text is short. Please write at least 400 words.', 'warning');
         
