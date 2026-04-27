@@ -1,99 +1,41 @@
-# INFER Study Alpha - Treatment Group 1
+# INFER Study Alpha — Treatment Group 1
 
-## Study Condition: INFER + Tutorial Video
+## Study Condition: INFER chain prompt + Tutorial Video
 
-This is the **Treatment Group 1** version of the INFER 4-video experiment.
+This is the **Treatment 1** version of the INFER 4-video experiment.
+Participants receive INFER chain-prompt feedback on Videos 2 & 3, and additionally watch a tutorial video before Video 2 explaining how to use the INFER feedback.
 
 ### Video Configuration
 
-| Video | Tutorial | INFER Feedback | Description |
-|-------|----------|----------------|-------------|
-| Video 1 | ❌ No | ❌ No | Reflection only (baseline) |
-| Video 2 | ✅ Yes | ✅ Yes | **Tutorial first**, then INFER with PV analysis |
-| Video 3 | ❌ No | ✅ Yes | Full INFER with PV analysis |
-| Video 4 | ❌ No | ❌ No | Reflection only (post-test) |
+| Video | Tutorial | INFER Feedback | Notes |
+|-------|----------|----------------|-------|
+| Video 1 | ❌ | ❌ | Reflection only (baseline) |
+| Video 2 | ✅ | ✅ chain | Tutorial first, then chain-prompt INFER feedback |
+| Video 3 | ❌ | ✅ chain | Chain-prompt INFER feedback |
+| Video 4 | ❌ | ❌ | Reflection only (post-test) |
 
 ### Study Flow
 
 ```
-Welcome/Consent → Login → Pre-Survey (MANDATORY)
+Welcome/Consent → Login → Pre-Survey (mandatory)
     ↓
-Video 1: Watch → Reflect → Submit → Survey (MANDATORY)
+Video 1: Watch → Reflect → Submit → Post-V1 Survey
     ↓
-[TUTORIAL VIDEO] → Watch tutorial → Confirm
+Video 2: Watch → [Tutorial Video] → Reflect → INFER chain feedback → Revise → Submit → Post-V2 Survey
     ↓
-Video 2: Watch → Reflect → INFER Feedback → Revise → Submit → Survey (MANDATORY)
+Video 3: Watch → Reflect → INFER chain feedback → Revise → Submit → Post-V3 Survey
     ↓
-Video 3: Watch → Reflect → INFER Feedback → Revise → Submit → Survey (MANDATORY)
+Video 4: Watch → Reflect → Submit → Post-V4 Survey
     ↓
-Video 4: Watch → Reflect → Submit → Survey (MANDATORY)
-    ↓
-Post-Survey (MANDATORY) → Thank You
+Post-Survey (mandatory) → Thank You
 ```
 
-### Configuration Required
+### Difference from Beta and Gamma
 
-1. Update `SUPABASE_URL` and `SUPABASE_KEY` in `app.js`
-2. Update `VIDEOS` array with actual video links
-3. Update `TUTORIAL_VIDEO` with tutorial video link
-4. Update `QUALTRICS_SURVEYS` with survey links
-
-### Key Difference from Beta (Treatment 2)
-
-- Participants watch a **tutorial video** explaining how to use INFER before Video 2
-- This tests RQ3: Does explanatory video increase meaningful use of INFER?
+- **vs Beta (Treatment 2)**: Alpha shows a tutorial video before Video 2; Beta does not. Both use the same INFER chain prompt.
+- **vs Gamma (Control)**: Alpha uses the INFER chain prompt — binary classification of every reflection window into Description / Explanation / Prediction, then a weighted feedback prompt over those analysis results (max_tokens=2000). Gamma uses a single-shot general prompt with no classification.
 
 ### Deployment
 
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
-
-
-
-### Deployment
-
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
-
-
-### Deployment
-
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
-
-
-
-### Deployment
-
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
-
-
-### Deployment
-
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
-
-
-
-### Deployment
-
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
-
-
-### Deployment
-
-Deploy to Render.com as a static site.
-
-URL Pattern: `infer-study-alpha.onrender.com`
-
-
-
-### DeploymentDeploy to Render.com as a static site.URL Pattern: `infer-study-alpha.onrender.com`
+Static site on Render. URL: `infer-study-alpha.onrender.com`
+Data: shared Supabase project (distinguished by `treatment_group = 'treatment_1'`).
